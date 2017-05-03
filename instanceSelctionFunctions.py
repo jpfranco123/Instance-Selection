@@ -1,0 +1,167 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+"""
+Created on Tue May  2 16:34:23 2017
+
+@author: juanpf
+"""
+
+import random as rd
+import pandas as pd
+import numpy as np
+import copy
+
+#Transforms a list of lists into a list
+flatten = lambda l: [item for sublist in l for item in sublist]
+
+def version():
+    return (1.0)
+
+#Instance categorization and extraction from original files
+
+#Allocates ncapacity and nprofits to bins
+#Bins the data received with respect to normalized capacity and profit in nbins bins
+#BINS are defined with repect to left edge
+def binCapProf(data,nbins):
+    dataMZN1=pd.DataFrame(data).copy()
+    #BINS are defined with repect to left edge
+    dataMZN1.ncapacity = pd.cut(dataMZN1.ncapacity,nbins,labels=False)/nbins
+    dataMZN1.nthreshold = pd.cut(dataMZN1.nthreshold,nbins,labels=False)/nbins
+    return dataMZN1
+
+### Add instance type ([1,6]) tp data according to the inputs
+#nProf: Normalized profit to sample within phase transition
+#nCap: Normalized profit to sample within phase transition
+#nProfNO: Normalized profit to sample outside the phase transition where there is NO solution
+#nProfYes: Normalized profit to sample outside the phase transition where there IS a solution
+#quantileLow: Easy instances at (nProf, nCap) are those below the quantileLow
+#quantileHigh: Hard instances at (nProf, nCap) are those above the quantileHigh
+## OutPut: 1=nProf-easy-NoSolution 2==nProf-easy-Solution 3=nProf-hard-NoSolution
+##  3=nProf-hard-Solution 5=nProfNo-NOSolution 6=nProfYES-Solution
+def addInstanceType(data,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper):
+    dataMZN1=data.copy()
+    dataMZN1['instanceType'] = -1
+   
+    complexity=dataMZN1.propagations[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nthreshold-nProf)<0.01)]
+    qUp=complexity.quantile(quantileLow)
+    qDown=complexity.quantile(quantileUpper)
+    
+    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nthreshold-nProf)<0.01) & 
+                        (dataMZN1.propagations<=qDown) & (dataMZN1.solution==0)]=1
+    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nthreshold-nProf)<0.01) & 
+                        (dataMZN1.propagations<=qDown) & (dataMZN1.solution==1)]=2
+    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nthreshold-nProf)<0.01) & 
+                    (dataMZN1.propagations>=qUp)& (dataMZN1.solution==0)] =3
+    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nthreshold-nProf)<0.01) & 
+                    (dataMZN1.propagations>=qUp)& (dataMZN1.solution==1)] =4
+    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nthreshold-nProfNO)<0.01) &
+                    (dataMZN1.solution==0)] =5
+    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nthreshold-nProfYES)<0.01) &
+                    (dataMZN1.solution==1)] =6
+    return dataMZN1
+                          
+
+# Samples randomly from each instance-type sampleSizePerBin
+# Output: list of sublists. Each sublist has sampleSizePerBin size with the instances ID
+# Sampling is done with replacement
+def sampleInstanceProblems(data,sampleSizePerBin):
+    dataMZN1=data.copy()
+    sampleProblems=[]
+    for j in range(1,7):
+        #sampleProblems.extend(dataMZN1.problem[dataMZN1.instanceType==j].sample(n=sampleSizePerBin,replace=True))
+        sampleProblems.append(dataMZN1.problem[dataMZN1.instanceType==j].sample(n=sampleSizePerBin,replace=True))
+    return sampleProblems
+
+
+#Extracting Instance informations and exporting into .txt files
+
+#Input: dataframe with the instances and a problem value.
+#Return: Profit, Capacity, weights and values AND instanceType
+def extractInstance(dataF, problema):
+    weights= [[int(y) for y in x.split(',')] for x in dataF.weights[dataF.problem==problema] ]
+    values=[ [int(y) for y in x.split(',')] for x in dataF['values'][dataF.problem==problema] ]
+    capacity=int(dataF.capacity[dataF.problem==problema])
+    profit=int(dataF.threshold[dataF.problem==problema])
+    instanceType=int(dataF.instanceType[dataF.problem==problema])
+    return (weights[0], values[0], capacity,profit,instanceType)
+
+    
+#Input: Profit, Capacity, weights, values and problemID.  
+#   The output Folder and the instance number to be maped to the name of the file.)
+#Output: Saves the Unity-Task-Compatible ".txt" file for that instance.
+def exportInstance(iw,iv,ic,ip,problemID,instanceType,folderOutput,instanceNumber):
+    wS='weights:'+str(iw)
+    vS='values:'+str(iv)
+    cS='capacity:'+str(ic)
+    pS='profit:'+str(ip)
+    problemIDS='problemID:'+str(problemID)
+    instanceTypeS='instanceType:'+str(instanceType)
+    string="\n".join([wS, vS, cS, pS,problemIDS,instanceTypeS])
+    string=string.replace(" ","")
+    text_file = open(folderOutput+'i'+str(instanceNumber)+'.txt', "w")
+    text_file.write(string)
+    text_file.close()
+    
+
+##Generates the instance randomization order for bN blocks of tN trials each.   
+    
+# Generates the randomization within each difficulty; i.e the sampling order for each difficulty level. 
+# Input: List of sublists. Each sublist has sampleSizePerBin size with the instances ID
+# Output: List of sublist. Each sublist has the randomized indeces of the instances for a difficulty level.
+# Assumes that the instance order was saved according to flatten(sampleProblems)
+def generateSampleOrderWithin(sampleProblems):
+    shufly=[]
+    initialIndex=0
+    for j in range(0,6):
+        temp=range(initialIndex,initialIndex+len(sampleProblems[j]))
+        temp=[x for x in temp]
+        initialIndex=initialIndex+len(sampleProblems[j])
+        rd.shuffle(temp)
+        shufly.append(temp)
+    return shufly
+
+#Generates de randomization across difficulties. Is the same for different blocks:
+#Input: tN=Number of trials per block
+# requires tN to be multiple of 6
+#Output: Array with difficulty sequence for a block (labeled as 1,...,6)
+def generateBlockDifficultyRand(tN): 
+    difficultyOrder=[]
+    for k in range(0,int(tN/6)):
+        difficultyOrder.extend(range(1,7))
+    rd.shuffle(difficultyOrder)
+    return(difficultyOrder)
+
+
+#Chooses the exact instance Order for all trials and blocks based on the difficultyOrder per block and shuffled instances
+#instanceOrder starts in 1.
+#INPUT: difficultyOrder as returned by generateBlockDifficultyRand and sufly as returned by generateSampleOrderWithin
+def generateInstanceOrder(difficultyOrder, shufly, bN):
+    shuflyTemp=copy.deepcopy(shufly)
+    instanceOrder=[]
+    for bi in range(0,bN):
+        for x in difficultyOrder:
+            itemToAdd=shuflyTemp[x-1].pop(0)+1
+            instanceOrder.extend([itemToAdd])
+    return instanceOrder
+
+#Exports:
+#The number of trials per block. 
+#The number of trials. 
+#The number of instance's files.
+#The instance order
+#INPUT: instanceOrder as returned by generateInstanceOrder, nInstances=number of instances saved to .txt files
+def exportTaskInfo(tN,bN,instanceOrder,nInstances,folderOutput):
+    tNS='numberOfTrials:'+str(tN)
+    bNS='numberOfBlocks:'+str(bN)
+    nInstancesS='numberOfInstances:'+str(nInstances)
+    instanceOrderS='instanceRandomization:'+str(instanceOrder)        
+    string="\n".join([tNS, bNS, nInstancesS, instanceOrderS])
+    string=string.replace(" ","")
+    text_file = open(folderOutput+'param2.txt', "w")
+    text_file.write(string)
+    text_file.close()
+    
+    
+
+    
+
