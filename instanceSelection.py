@@ -12,17 +12,21 @@ import pandas as pd
 import numpy as np
 import csv
 import random as rd
+import importlib
+import os
+
+
+
+os.chdir('/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/')
 
 import instanceSelctionFunctions as isf
-
-import importlib
 importlib.reload(isf)
 #import os
 #cwd = os.getcwd()
 
 #jfranco1
-folderInput='/Users/juanpf/Google Drive/Melbourne/UNIMELB/Complexity Project/Simulations and Solutions/'
-folderOut='/Users/juanpf/Google Drive/Melbourne/UNIMELB/Complexity Project/Phase Transitions/Instance Selection/output/'
+folderInput='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Simulations and Solutions/'
+folderOut='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/'
 
 #dataSAT=[];
 dataMZN=[];
@@ -76,10 +80,15 @@ nProfYES=0.2
 nCap=0.4
 data=isf.addInstanceType(data,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper)
 
+#bN blocks of tN trials 
+#requires tN to be multiple of 6
+tN=12
+bN=3
+
 # Samples randomly from each instance-type sampleSizePerBin
 # Output: list of sublists. Each sublist has sampleSizePerBin size with the instances ID
 # Warning: Sampling is done with replacement
-sampleSizePerBin=10
+sampleSizePerBin=int(tN*bN/6)
 sampleProblems=isf.sampleInstanceProblems(data,sampleSizePerBin)
 
 
@@ -92,23 +101,16 @@ for k in isf.flatten(sampleProblems):
     instanceNumber=instanceNumber+1
 
 
-
 # Generates the instance randomization order for bN blocks of tN trials 
 # This is done for each of the previously exported files
-
-#requires tN to be multiple of 6
-tN=12
-bN=3
 
 # Generates the randomization within each difficulty; i.e the sampling order for each difficulty level.
 shufly=isf.generateSampleOrderWithin(sampleProblems)
 
-#Generates de randomization across difficulties. Is the same for different blocks:
-difficultyOrder=isf.generateBlockDifficultyRand(tN)
 
 #Chooses the exact instance Order for all trials and blocks 
-#based on the difficultyOrder per block and shuffled instances
-instanceOrder=isf.generateInstanceOrder(difficultyOrder, shufly, bN)
+#based on shuffled instances
+instanceOrder=isf.generateInstanceOrder(shufly,tN, bN)
 
 #Exports 'param2.txt' with the required input for the task
 nInstances=len(isf.flatten(sampleProblems))

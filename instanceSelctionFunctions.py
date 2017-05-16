@@ -120,7 +120,7 @@ def generateSampleOrderWithin(sampleProblems):
         shufly.append(temp)
     return shufly
 
-#Generates de randomization across difficulties. Is the same for different blocks:
+#Generates de randomization across difficulties for a block
 #Input: tN=Number of trials per block
 # requires tN to be multiple of 6
 #Output: Array with difficulty sequence for a block (labeled as 1,...,6)
@@ -134,11 +134,12 @@ def generateBlockDifficultyRand(tN):
 
 #Chooses the exact instance Order for all trials and blocks based on the difficultyOrder per block and shuffled instances
 #instanceOrder starts in 1.
-#INPUT: difficultyOrder as returned by generateBlockDifficultyRand and sufly as returned by generateSampleOrderWithin
-def generateInstanceOrder(difficultyOrder, shufly, bN):
+#INPUT: Shufly as returned by generateSampleOrderWithin
+def generateInstanceOrder(shufly,tN, bN):
     shuflyTemp=copy.deepcopy(shufly)
     instanceOrder=[]
     for bi in range(0,bN):
+        difficultyOrder=generateBlockDifficultyRand(tN);
         for x in difficultyOrder:
             itemToAdd=shuflyTemp[x-1].pop(0)+1
             instanceOrder.extend([itemToAdd])
