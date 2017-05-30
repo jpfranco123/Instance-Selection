@@ -33,7 +33,7 @@ dataMZN=[];
 dataMetrics=[];
 
 #Files to be uploaded with respect to the number of items
-cols=[7]#,15,20,25,30]
+cols=[6]#,15,20,25,30]
 nCols=len(cols)
  
 #Data Upload
@@ -96,8 +96,8 @@ sampleProblems=isf.sampleInstanceProblems(data,sampleSizePerBin)
 #Exports all the instance files in the sampleProblems list
 instanceNumber=1
 for k in isf.flatten(sampleProblems):
-    iw,iv,ic,ip,instanceType=isf.extractInstance(data,k)
-    isf.exportInstance(iw,iv,ic,ip,k,instanceType,folderOut,instanceNumber)
+    iw,iv,ic,ip,instanceType,solution=isf.extractInstance(data,k)
+    isf.exportInstance(iw,iv,ic,ip,k,instanceType,solution,folderOut,instanceNumber)
     instanceNumber=instanceNumber+1
 
 

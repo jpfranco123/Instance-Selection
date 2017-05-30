@@ -83,20 +83,22 @@ def extractInstance(dataF, problema):
     capacity=int(dataF.capacity[dataF.problem==problema])
     profit=int(dataF.threshold[dataF.problem==problema])
     instanceType=int(dataF.instanceType[dataF.problem==problema])
-    return (weights[0], values[0], capacity,profit,instanceType)
+    solution=int(dataF.solution[dataF.problem==problema])
+    return (weights[0], values[0], capacity,profit,instanceType, solution)
 
     
 #Input: Profit, Capacity, weights, values and problemID.  
 #   The output Folder and the instance number to be maped to the name of the file.)
 #Output: Saves the Unity-Task-Compatible ".txt" file for that instance.
-def exportInstance(iw,iv,ic,ip,problemID,instanceType,folderOutput,instanceNumber):
+def exportInstance(iw,iv,ic,ip,problemID,instanceType, solution ,folderOutput,instanceNumber):
     wS='weights:'+str(iw)
     vS='values:'+str(iv)
     cS='capacity:'+str(ic)
     pS='profit:'+str(ip)
     problemIDS='problemID:'+str(problemID)
     instanceTypeS='instanceType:'+str(instanceType)
-    string="\n".join([wS, vS, cS, pS,problemIDS,instanceTypeS])
+    solutionS='solution:'+str(solution)
+    string="\n".join([wS, vS, cS, pS,problemIDS,instanceTypeS,solutionS])
     string=string.replace(" ","")
     text_file = open(folderOutput+'i'+str(instanceNumber)+'.txt', "w")
     text_file.write(string)
