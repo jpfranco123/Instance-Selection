@@ -17,6 +17,12 @@ flatten = lambda l: [item for sublist in l for item in sublist]
 def version():
     return (1.0)
 
+def frange(start, stop, step):
+    i = start
+    while i < stop:
+        yield i
+        i += step
+
 #Instance categorization and extraction from original files
 
 #Allocates ncapacity and nprofits to bins
@@ -24,42 +30,102 @@ def version():
 #BINS are defined with repect to left edge
 def binCapProf(data,nbins):
     dataMZN1=pd.DataFrame(data).copy()
+    steps=1/nbins
     #BINS are defined with repect to left edge
-    dataMZN1.ncapacity = pd.cut(dataMZN1.ncapacity,nbins,labels=False)/nbins
-    dataMZN1.nthreshold = pd.cut(dataMZN1.nthreshold,nbins,labels=False)/nbins
+    #dataMZN1.ncapacity = pd.cut(dataMZN1.ncapacity,nbins,labels=False)/nbins
+    #dataMZN1.nprofit = pd.cut(dataMZN1.nprofit,nbins,labels=False)/nbins
+    bins=list(frange(0,1+steps,steps))
+    bins[0]=-0.01
+    bins[len(bins)-1]=1.01
+    #NOBIN
+    dataMZN1['ncapacityNoBin']=dataMZN1.ncapacity;
+    dataMZN1['nprofitNoBin']=dataMZN1.nprofit;
+    #Binned 
+    dataMZN1.ncapacity = pd.cut(dataMZN1.ncapacity,bins,labels=False)/nbins
+    dataMZN1.nprofit = pd.cut(dataMZN1.nprofit,bins,labels=False)/nbins  
     return dataMZN1
 
-### Add instance type ([1,6]) tp data according to the inputs
+
+### Add instance type ([1,6]) tp data according to the inputs (Decision Instances)
 #nProf: Normalized profit to sample within phase transition
 #nCap: Normalized profit to sample within phase transition
 #nProfNO: Normalized profit to sample outside the phase transition where there is NO solution
 #nProfYes: Normalized profit to sample outside the phase transition where there IS a solution
 #quantileLow: Easy instances at (nProf, nCap) are those below the quantileLow
-#quantileHigh: Hard instances at (nProf, nCap) are those above the quantileHigh
+#quantileHigh: Hard instances at (nProf, nCap) are those above the quantileUpper
 ## OutPut: 1=nProf-easy-NoSolution 2==nProf-easy-Solution 3=nProf-hard-NoSolution
 ##  3=nProf-hard-Solution 5=nProfNo-NOSolution 6=nProfYES-Solution
 def addInstanceType(data,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper):
     dataMZN1=data.copy()
     dataMZN1['instanceType'] = -1
    
-    complexity=dataMZN1.propagations[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nthreshold-nProf)<0.01)]
-    qUp=complexity.quantile(quantileLow)
-    qDown=complexity.quantile(quantileUpper)
+    complexity=dataMZN1.propagations[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01)]
+    #qUp=complexity.quantile(quantileLow)
+    #qDown=complexity.quantile(quantileUpper)
+    qUp=complexity.quantile(quantileUpper)
+    qDown=complexity.quantile(quantileLow)
     
-    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nthreshold-nProf)<0.01) & 
-                        (dataMZN1.propagations<=qDown) & (dataMZN1.solution==0)]=1
-    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nthreshold-nProf)<0.01) & 
-                        (dataMZN1.propagations<=qDown) & (dataMZN1.solution==1)]=2
-    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nthreshold-nProf)<0.01) & 
-                    (dataMZN1.propagations>=qUp)& (dataMZN1.solution==0)] =3
-    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nthreshold-nProf)<0.01) & 
-                    (dataMZN1.propagations>=qUp)& (dataMZN1.solution==1)] =4
-    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nthreshold-nProfNO)<0.01) &
-                    (dataMZN1.solution==0)] =5
-    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nthreshold-nProfYES)<0.01) &
-                    (dataMZN1.solution==1)] =6
+#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & 
+#                          (dataMZN1.propagations<=qDown) & (dataMZN1.solution==0)]=1
+#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & 
+#                        (dataMZN1.propagations<=qDown) & (dataMZN1.solution==1)]=2
+#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & 
+#                    (dataMZN1.propagations>=qUp)& (dataMZN1.solution==0)] =3
+#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & 
+#                    (dataMZN1.propagations>=qUp)& (dataMZN1.solution==1)] =4
+#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProfNO)<0.01) &
+#                    (dataMZN1.solution==0)] =5
+#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProfYES)<0.01) &
+#                    (dataMZN1.solution==1)] =6
+
+    dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & 
+                          (dataMZN1.propagations<=qDown) & (dataMZN1.solution==0),'instanceType']=1
+    dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & 
+                        (dataMZN1.propagations<=qDown) & (dataMZN1.solution==1),'instanceType']=2
+    dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & 
+                    (dataMZN1.propagations>=qUp)& (dataMZN1.solution==0),'instanceType'] =3
+    dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & 
+                    (dataMZN1.propagations>=qUp)& (dataMZN1.solution==1),'instanceType'] =4
+    dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProfNO)<0.01) &
+                    (dataMZN1.solution==0),'instanceType'] =5
+    dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProfYES)<0.01) &
+                    (dataMZN1.solution==1),'instanceType'] =6
     return dataMZN1
-                          
+
+### Add instance type ([1,6]) tp data according to the inputs (Optimization Instances)
+#nProf: Normalized profit to sample within phase transition
+#nCap: Normalized profit to sample within phase transition
+#nProfNO: Normalized profit to sample outside the phase transition where there is NO solution
+#nProfYes: Normalized profit to sample outside the phase transition where there IS a solution
+#quantileLow: Easy instances at (nProf, nCap) are those below the quantileLow
+#quantileHigh: Hard instances at (nProf, nCap) are those above the quantileUpper
+## OutPut: 1=nProf-easy-NoSolution 2==nProf-easy-Solution 3=nProf-hard-NoSolution
+##  3=nProf-hard-Solution 5=nProfNo-NOSolution 6=nProfYES-Solution
+def addInstanceTypeOpt(data,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper):
+    dataMZN1=data.copy()
+    dataMZN1['instanceType'] = -1
+   
+    complexity=dataMZN1.propagations[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01)]
+    #qUp=complexity.quantile(quantileLow)
+    #qDown=complexity.quantile(quantileUpper)
+    qUp=complexity.quantile(quantileUpper)
+    qDown=complexity.quantile(quantileLow)
+    
+#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & 
+#                        (dataMZN1.propagations<=qDown) & (dataMZN1.solution==0)]=1
+    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & 
+                        (dataMZN1.propagations<=qDown)]=2
+#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & 
+#                    (dataMZN1.propagations>=qUp)& (dataMZN1.solution==0)] =3
+    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & 
+                    (dataMZN1.propagations>=qUp)] =4
+#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProfNO)<0.01) &
+#                    (dataMZN1.solution==0)] =5
+    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProfYES)<0.01) ] =6
+    return dataMZN1
+     
+
+                     
 
 # Samples randomly from each instance-type sampleSizePerBin
 # Output: list of sublists. Each sublist has sampleSizePerBin size with the instances ID
@@ -86,6 +152,20 @@ def extractInstance(dataF, problema):
     solution=int(dataF.solution[dataF.problem==problema])
     return (weights[0], values[0], capacity,profit,instanceType, solution)
 
+
+def extractInstanceOpt(dataF, problema):
+    weights= [[int(y) for y in x.split(',')] for x in dataF.weights[dataF.problem==problema] ]
+    values=[ [int(y) for y in x.split(',')] for x in dataF['values'][dataF.problem==problema] ]
+    capacity=int(dataF.capacity[dataF.problem==problema])
+    profit=int(dataF.threshold[dataF.problem==problema])
+    instanceType=int(dataF.instanceType[dataF.problem==problema])
+    
+    itemsOpt= dataF.solution[dataF.problem==problema].values[0]
+    cOpt=int(dataF.weightOpt[dataF.problem==problema])
+    pOpt=int(dataF.profitOpt[dataF.problem==problema])
+    
+    return (weights[0], values[0], capacity,profit,instanceType,pOpt,cOpt,itemsOpt)
+
     
 #Input: Profit, Capacity, weights, values and problemID.  
 #   The output Folder and the instance number to be maped to the name of the file.)
@@ -99,6 +179,25 @@ def exportInstance(iw,iv,ic,ip,problemID,instanceType, solution ,folderOutput,in
     instanceTypeS='instanceType:'+str(instanceType)
     solutionS='solution:'+str(solution)
     string="\n".join([wS, vS, cS, pS,problemIDS,instanceTypeS,solutionS])
+    string=string.replace(" ","")
+    text_file = open(folderOutput+'i'+str(instanceNumber)+'.txt', "w")
+    text_file.write(string)
+    text_file.close()
+    
+    
+#Input: Profit, Capacity, weights, values, problemID.... Includes data from Optimization Variant.
+#   The output Folder and the instance number to be maped to the name of the file.)
+#Output: Saves the Unity-Task-Compatible ".txt" file for that instance.
+def exportInstanceOpt(iw,iv,ic,ip,problemID,instanceType,folderOutput,instanceNumber,pOpt,cOpt,itemsOpt):
+    wS='weights:'+str(iw)
+    vS='values:'+str(iv)
+    cS='capacity:'+str(ic)
+    problemIDS='problemID:'+str(problemID)
+    instanceTypeS='instanceType:'+str(instanceType)
+    itemsOptS='solutionItems'+str(itemsOpt)
+    cOptS='capacityAtOptimum:'+str(cOpt)
+    pOptS='profitAtOptimum:'+str(pOpt)
+    string="\n".join([wS, vS, cS,problemIDS,instanceTypeS,pOptS,cOptS,itemsOptS])
     string=string.replace(" ","")
     text_file = open(folderOutput+'i'+str(instanceNumber)+'.txt', "w")
     text_file.write(string)
