@@ -89,7 +89,8 @@ bN=3
 # Output: list of sublists. Each sublist has sampleSizePerBin size with the instances ID
 # Warning: Sampling is done with replacement
 sampleSizePerBin=int(tN*bN/6)
-sampleProblems=isf.sampleInstanceProblems(data,sampleSizePerBin)
+possibleTypes=range(1,7)
+sampleProblems=isf.sampleInstanceProblems(data,sampleSizePerBin,possibleTypes)
 
 
 

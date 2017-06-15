@@ -10,7 +10,7 @@ import plotly.graph_objs as go
 import numpy as np
 
 t = np.linspace(0,1,2000)
-x=data.nthreshold
+x=data.nProfitOpt
 y=data.ncapacity
 
 trace1 = go.Scatter(

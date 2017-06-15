@@ -14,6 +14,14 @@ import copy
 #Transforms a list of lists into a list
 flatten = lambda l: [item for sublist in l for item in sublist]
 
+# Transformss a string (e.g. "[1,2,3]") as an array of numbers 
+# In particular imports an optimization SOLUTION (e.g. "[0,1,1,0,1]") as an Array
+solToArray = lambda d : [int(y) for y in d.split('[')[1].split(']')[0].split(',')]
+
+# Transformss a string (e.g. "1,2,3") as an array of numbers 
+# In particular imports weights and values (e.g. "10,21,12,11,12") as an Array
+textToArray = lambda d : [int(y) for y in d.split(',')]
+
 def version():
     return (1.0)
 
@@ -92,48 +100,16 @@ def addInstanceType(data,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper):
                     (dataMZN1.solution==1),'instanceType'] =6
     return dataMZN1
 
-### Add instance type ([1,6]) tp data according to the inputs (Optimization Instances)
-#nProf: Normalized profit to sample within phase transition
-#nCap: Normalized profit to sample within phase transition
-#nProfNO: Normalized profit to sample outside the phase transition where there is NO solution
-#nProfYes: Normalized profit to sample outside the phase transition where there IS a solution
-#quantileLow: Easy instances at (nProf, nCap) are those below the quantileLow
-#quantileHigh: Hard instances at (nProf, nCap) are those above the quantileUpper
-## OutPut: 1=nProf-easy-NoSolution 2==nProf-easy-Solution 3=nProf-hard-NoSolution
-##  3=nProf-hard-Solution 5=nProfNo-NOSolution 6=nProfYES-Solution
-def addInstanceTypeOpt(data,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper):
-    dataMZN1=data.copy()
-    dataMZN1['instanceType'] = -1
-   
-    complexity=dataMZN1.propagations[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01)]
-    #qUp=complexity.quantile(quantileLow)
-    #qDown=complexity.quantile(quantileUpper)
-    qUp=complexity.quantile(quantileUpper)
-    qDown=complexity.quantile(quantileLow)
-    
-#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & 
-#                        (dataMZN1.propagations<=qDown) & (dataMZN1.solution==0)]=1
-    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & 
-                        (dataMZN1.propagations<=qDown)]=2
-#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & 
-#                    (dataMZN1.propagations>=qUp)& (dataMZN1.solution==0)] =3
-    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & 
-                    (dataMZN1.propagations>=qUp)] =4
-#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProfNO)<0.01) &
-#                    (dataMZN1.solution==0)] =5
-    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProfYES)<0.01) ] =6
-    return dataMZN1
-     
-
                      
 
 # Samples randomly from each instance-type sampleSizePerBin
+# Input: possibleTypes:= the instance types from which to sample e.g. range(1,7)
 # Output: list of sublists. Each sublist has sampleSizePerBin size with the instances ID
 # Sampling is done with replacement
-def sampleInstanceProblems(data,sampleSizePerBin):
+def sampleInstanceProblems(data,sampleSizePerBin,possibleTypes):
     dataMZN1=data.copy()
     sampleProblems=[]
-    for j in range(1,7):
+    for j in possibleTypes:#range(1,7):
         #sampleProblems.extend(dataMZN1.problem[dataMZN1.instanceType==j].sample(n=sampleSizePerBin,replace=True))
         sampleProblems.append(dataMZN1.problem[dataMZN1.instanceType==j].sample(n=sampleSizePerBin,replace=True))
     return sampleProblems
@@ -147,7 +123,8 @@ def extractInstance(dataF, problema):
     weights= [[int(y) for y in x.split(',')] for x in dataF.weights[dataF.problem==problema] ]
     values=[ [int(y) for y in x.split(',')] for x in dataF['values'][dataF.problem==problema] ]
     capacity=int(dataF.capacity[dataF.problem==problema])
-    profit=int(dataF.threshold[dataF.problem==problema])
+    #profit=int(dataF.threshold[dataF.problem==problema])
+    profit=int(dataF.profit[dataF.problem==problema])
     instanceType=int(dataF.instanceType[dataF.problem==problema])
     solution=int(dataF.solution[dataF.problem==problema])
     return (weights[0], values[0], capacity,profit,instanceType, solution)
@@ -157,14 +134,13 @@ def extractInstanceOpt(dataF, problema):
     weights= [[int(y) for y in x.split(',')] for x in dataF.weights[dataF.problem==problema] ]
     values=[ [int(y) for y in x.split(',')] for x in dataF['values'][dataF.problem==problema] ]
     capacity=int(dataF.capacity[dataF.problem==problema])
-    profit=int(dataF.threshold[dataF.problem==problema])
+    #profit=int(dataF.threshold[dataF.problem==problema])
     instanceType=int(dataF.instanceType[dataF.problem==problema])
     
     itemsOpt= dataF.solution[dataF.problem==problema].values[0]
     cOpt=int(dataF.weightOpt[dataF.problem==problema])
     pOpt=int(dataF.profitOpt[dataF.problem==problema])
-    
-    return (weights[0], values[0], capacity,profit,instanceType,pOpt,cOpt,itemsOpt)
+    return (weights[0], values[0], capacity,instanceType,pOpt,cOpt,itemsOpt)
 
     
 #Input: Profit, Capacity, weights, values and problemID.  
@@ -188,13 +164,13 @@ def exportInstance(iw,iv,ic,ip,problemID,instanceType, solution ,folderOutput,in
 #Input: Profit, Capacity, weights, values, problemID.... Includes data from Optimization Variant.
 #   The output Folder and the instance number to be maped to the name of the file.)
 #Output: Saves the Unity-Task-Compatible ".txt" file for that instance.
-def exportInstanceOpt(iw,iv,ic,ip,problemID,instanceType,folderOutput,instanceNumber,pOpt,cOpt,itemsOpt):
+def exportInstanceOpt(iw,iv,ic,problemID,instanceType,folderOutput,instanceNumber,pOpt,cOpt,itemsOpt):
     wS='weights:'+str(iw)
     vS='values:'+str(iv)
     cS='capacity:'+str(ic)
     problemIDS='problemID:'+str(problemID)
     instanceTypeS='instanceType:'+str(instanceType)
-    itemsOptS='solutionItems'+str(itemsOpt)
+    itemsOptS='solutionItems:'+str(itemsOpt)
     cOptS='capacityAtOptimum:'+str(cOpt)
     pOptS='profitAtOptimum:'+str(pOpt)
     string="\n".join([wS, vS, cS,problemIDS,instanceTypeS,pOptS,cOptS,itemsOptS])
@@ -213,7 +189,7 @@ def exportInstanceOpt(iw,iv,ic,ip,problemID,instanceType,folderOutput,instanceNu
 def generateSampleOrderWithin(sampleProblems):
     shufly=[]
     initialIndex=0
-    for j in range(0,6):
+    for j in range(0,len(sampleProblems)):#range(0,6):
         temp=range(initialIndex,initialIndex+len(sampleProblems[j]))
         temp=[x for x in temp]
         initialIndex=initialIndex+len(sampleProblems[j])
@@ -225,10 +201,10 @@ def generateSampleOrderWithin(sampleProblems):
 #Input: tN=Number of trials per block
 # requires tN to be multiple of 6
 #Output: Array with difficulty sequence for a block (labeled as 1,...,6)
-def generateBlockDifficultyRand(tN): 
+def generateBlockDifficultyRand(tN,nTypes): 
     difficultyOrder=[]
-    for k in range(0,int(tN/6)):
-        difficultyOrder.extend(range(1,7))
+    for k in range(0,int(tN/nTypes)):
+        difficultyOrder.extend(range(1,nTypes+1))
     rd.shuffle(difficultyOrder)
     return(difficultyOrder)
 
@@ -236,11 +212,12 @@ def generateBlockDifficultyRand(tN):
 #Chooses the exact instance Order for all trials and blocks based on the difficultyOrder per block and shuffled instances
 #instanceOrder starts in 1.
 #INPUT: Shufly as returned by generateSampleOrderWithin
-def generateInstanceOrder(shufly,tN, bN):
+#nTypes:= number of instance types
+def generateInstanceOrder(shufly,tN, bN,nTypes):
     shuflyTemp=copy.deepcopy(shufly)
     instanceOrder=[]
     for bi in range(0,bN):
-        difficultyOrder=generateBlockDifficultyRand(tN);
+        difficultyOrder=generateBlockDifficultyRand(tN, nTypes);
         for x in difficultyOrder:
             itemToAdd=shuflyTemp[x-1].pop(0)+1
             instanceOrder.extend([itemToAdd])
@@ -262,8 +239,52 @@ def exportTaskInfo(tN,bN,instanceOrder,nInstances,folderOutput):
     text_file = open(folderOutput+'param2.txt', "w")
     text_file.write(string)
     text_file.close()
+
+# Transforms Solution, Weights and Values to Arrays
+# Calculates Optimum Profit and Weight
+# Calculates normalized Optimum Profit and Weight
+# npfrofit for Optimization is the normalized optimal profit
+def calculateOptimum(data):
+    dataTemp=data.copy()
+    #Transform Solution to Array
+    dataTemp.solution = dataTemp.solution.apply(solToArray)
     
+    #Transform weight and values to arrays
+    dataTemp['weightsArr']= dataTemp.weights.apply(textToArray)
+    dataTemp['valuesArr']= dataTemp['values'].apply(textToArray)
     
+    #Calculate Optimum Profit and Weight
+    dataTemp['profitOpt']=dataTemp.apply(lambda y : np.dot(y['solution'],y['valuesArr']), axis=1)
+    dataTemp['weightOpt']=dataTemp.apply(lambda y : np.dot(y['solution'],y['weightsArr']), axis=1)
+    
+    #Calculate normalized Optimum Profit and Weight
+    dataTemp['nProfitOpt']=dataTemp.apply(lambda y : y['profitOpt']/sum(y['valuesArr']), axis=1)
+    dataTemp['nWeightOpt']=dataTemp.apply(lambda y : y['weightOpt']/sum(y['weightsArr']), axis=1)
+    
+    #For Optimization we assume that the normalized profit is the optimal profit
+    dataTemp['nprofit']=dataTemp['nProfitOpt']
+    return dataTemp
+
+# Merges Optimization data and relevant decision columns. 
+# Merge is done on weights,values and ncapacity (Not categorized into a bin)
+# Aim: Add instance type from decision Problem to Optimization Problem
+def mergeOptDec(dataDec, dataOpt):
+    diffDecInfo=dataDec[['weights','values','ncapacityNoBin','nprofitNoBin','instanceType','problem']]
+    diffDecInfo.columns=['weights','values','ncapacity','nprofitNoBinDec','instanceType','problemDec']
+    dataTemp=pd.merge(diffDecInfo,dataOpt,how='inner',on=['weights','values','ncapacity'])
+    return dataTemp
+    
+
+#Keep only those instances where the nProfit of Decision problem (not binned) is the closest to nprofitOpt 
+#such that nprofitNoBinDec<nprofitOpt
+def removeRepeatedOptInstances(data):
+    dataTemp=data.copy()                                                            
+    dataTemp['diffProf']=dataTemp.nprofit-dataTemp.nprofitNoBinDec
+    dataTemp=dataTemp[dataTemp.diffProf>=0]
+    dataTempG=dataTemp.groupby(by=['weights','values','ncapacity'])
+    ranking=dataTempG.diffProf.rank(method='min')
+    dataTemp=dataTemp[ranking==1]
+    return dataTemp
 
     
 

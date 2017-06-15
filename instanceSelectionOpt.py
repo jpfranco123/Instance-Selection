@@ -8,13 +8,25 @@ Created on Mon May  1 11:09:57 2017
 Instance Random Selection 
 """
 
+#66 TODO: Homologar (npcapacity and ncapacityBin) and (nProfit and nprofitBin) 
+#en el momento se diferencia ncapacity de ncapacityNoBin (same for nprofit) para Decision problem, 
+# pero para Optimization ncapacity y nprofit no son Binned
+#Entonces ncapacity cuando se hace el merge de las dataframes es NoBin, pero se llama ncapacity...
+#Make standard No BIn: i.e. ncapacity and nprofit are not binned . And create for decision problem ncapacityBin(nprof..): and change all dependendencies
+
+                                                                                                               
+                                                                                                               
+                                                                                                               
+#Before Starting optimization part you must have run intanceSelectionDec and stored the data in dataDec
+dataDec=data
+
+
 import pandas as pd
 import numpy as np
 import csv
 import random as rd
 import importlib
 import os
-
 
 
 os.chdir('/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/')
@@ -55,140 +67,23 @@ for i in range(0,nCols):
     dataMZN[i]=pd.merge(dataMZN[i],dataMetrics[i],on='problem')
 
 
-data=dataMZN[0]
+dataOpt=dataMZN[0]
 
-#66 Create function for this section
-#IMPORT SOLUTION as an Array
-solToArray = lambda d : [int(y) for y in d.split('[')[1].split(']')[0].split(',')]
-data.solution = data.solution.apply(solToArray)
+# Calculates nprofit for the optimization case (i.e. the optimum normalized profit)
+dataOpt=calculateOptimum(dataOpt)
 
 
-#Add profit and Capacity
-textToArray = lambda d : [int(y) for y in d.split(',')]
-data['weightsArr']= data.weights.apply(textToArray)
-data['valuesArr']= data['values'].apply(textToArray)
-
-data['profitOpt']=data.apply(lambda y : np.dot(y['solution'],y['valuesArr']), axis=1)
-data['weightOpt']=data.apply(lambda y : np.dot(y['solution'],y['weightsArr']), axis=1)
-
-#Add nProfit and nCapacity
-data['nProfitOpt']=data.apply(lambda y : y['profitOpt']/sum(y['valuesArr']), axis=1)
-data['nWeightOpt']=data.apply(lambda y : y['weightOpt']/sum(y['weightsArr']), axis=1)
-
-#For Optimization we assume that the normalized profit is the optimal profit
-data['nprofit']=data['nProfitOpt']
+# Merges Optimization data and relevant decision columns. 
+# Aim: Add instance type from decision Problem to Optimization Problem
+# Warning: Here each optimization problem is mapped into many decion problems
+data=mergeOptDec(dataDec, dataOpt)
 
 
-
-#Add instance type from decision Problem to Optimization Problem
-
-diffDecInfo=dataDec[['weights','values','ncapacityNoBin','nprofitNoBin','instanceType']]
-diffDecInfo.columns=['weights','values','ncapacity','nprofitNoBinDec','instanceType']
-data=pd.merge(diffDecInfo,dataOpt,how='inner',on=['weights','values','ncapacity'])
-
-#keep only those entries where nprofitNoBinDec is close to nprofit (opt)
-
-data['diffProf']=data.nprofit-data.nprofitNoBinDec
-data=data[data.diffProf>=0]
-#data1=data
-dataG=data.groupby(by=['weights','values','ncapacity'])
-ranking=dataG.diffProf.rank(method='min')
-data=data[ranking==1]
-
-temp=data[['nprofit','nprofitNoBinDec']]
-temp['rest']=temp.nprofit-temp.nprofitNoBinDec
-temp.describe()
+#Keep only those instances where the nProfit of Decision problem (not binned) is the closest to nprofitOpt s.t. nprofitNoBinDec<nprofitOpt
+data=removeRepeatedOptInstances(data)
 
 
-#Check InstanceTypes Here that are 1  and 5 (they are NO solution according to DEC but the proftitQ<Optimum )
-data.instanceType[data.instanceType>0].hist()
-
-unique()
-
-
-
-
-
-
-
-
-
-w=diffDecInfo.weights[0]
-v=diffDecInfo['values'][0]
-nc=diffDecInfo.ncapacity[0]
-
-aa=dataDec.problem[(dataDec.weights==w) & (dataDec['values']==v) &(np.abs(dataDec.ncapacityNoBin-nc)<0.001)]
-
-a=diffDecInfo.ncapacity[(diffDecInfo.weights==w) & (diffDecInfo['values']==v) &(diffDecInfo.ncapacity==nc)] #(np.abs(diffDecInfo.ncapacity-nc)<0.001)]# 
-b=diffDecInfo.nprofitNoBinDec[(diffDecInfo.weights==w) & (diffDecInfo['values']==v) &(diffDecInfo.ncapacity==nc)] #(np.abs(diffDecInfo.ncapacity-nc)<0.001)]# 
-
-    
-c=dataOpt.ncapacity[(dataOpt.weights==w) & (dataOpt['values']==v) & (np.abs(dataOpt.ncapacity-nc)<0.01)]# (dataOpt.ncapacity==nc)] #
-d=dataOpt.nprofit[(dataOpt.weights==w) & (dataOpt['values']==v) & (np.abs(dataOpt.ncapacity-nc)<0.01)]
-e=dataOpt.propagations[(dataOpt.weights==w) & (dataOpt['values']==v) & (np.abs(dataOpt.ncapacity-nc)<0.01)]
-f=dataOpt.problem[(dataOpt.weights==w) & (dataOpt['values']==v) & (np.abs(dataOpt.ncapacity-nc)<0.01)]
-
-
-    
-    
-    
-    
-data.nprofitNoBinOpt[dataDec.weights==data.weights[0] & data.values==data.values[0] & data.ncapacity==data.ncapacity[0]]
-
-dataDec.instanceType.unique()
-
-dataDec.nprofitNoBin.unique()
-dataDec['nprofitNoBin']=dataDec.nprofit
-
-
-dataDec.weights[dataDec.nprofitNoBin.unique()[0]==dataDec.nprofitNoBin]
-
-
-
-
-
-
-
-
-
-
-#number of bins to allocate the data
-nbins=20
-#Allocates ncapacity and nprofits to bins
-#BINS are defined with repect to left edge (i.e. nCap=0.5 means nCap in [0.5,0.5+binSize] )
-data=isf.binCapProf(data,nbins)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Add instance type ([1,6]) tp data according to the inputs
-#nProf: Normalized profit to sample within phase transition
-#nCap: Normalized profit to sample within phase transition
-#nProfNO: Normalized profit to sample outside the phase transition where there is NO solution
-#nProfYes: Normalized profit to sample outside the phase transition where there IS a solution
-#quantileLow: Easy instances at (nProf, nCap) are those below the quantileLow
-#quantileHigh: Hard instances at (nProf, nCap) are those above the quantileHigh
-## OutPut: 1=nProf-easy-NoSolution 2==nProf-easy-Solution 3=nProf-hard-NoSolution
-##  3=nProf-hard-Solution 5=nProfNo-NOSolution 6=nProfYES-Solution
-nProf=0.55
-quantileLow=0.4
-quantileUpper=0.6
-nProfNO=0.9
-nProfYES=0.2
-nCap=0.4
-data=isf.addInstanceTypeOpt(data,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper)
-
+#Sample Instances
 #bN blocks of tN trials 
 #requires tN to be multiple of 6
 tN=12
@@ -197,16 +92,17 @@ bN=3
 # Samples randomly from each instance-type sampleSizePerBin
 # Output: list of sublists. Each sublist has sampleSizePerBin size with the instances ID
 # Warning: Sampling is done with replacement
-sampleSizePerBin=int(tN*bN/6)
-sampleProblems=isf.sampleInstanceProblems(data,sampleSizePerBin)
-
+sampleSizePerBin=int(tN*bN/3)
+possibleTypes=range(2,7,2)
+nTypes=len(possibleTypes)
+sampleProblems=isf.sampleInstanceProblems(data,sampleSizePerBin,possibleTypes)
 
 
 #Exports all the instance files in the sampleProblems list
 instanceNumber=1
 for k in isf.flatten(sampleProblems):
-    iw,iv,ic,ip,instanceType,pOpt,cOpt,itemsOpt=isf.extractInstanceOpt(data,k)
-    isf.exportInstanceOpt(iw,iv,ic,ip,k,instanceType,folderOut,instanceNumber,pOpt,cOpt,itemsOpt)
+    iw,iv,ic,instanceType,pOpt,cOpt,itemsOpt=isf.extractInstanceOpt(data,k)
+    isf.exportInstanceOpt(iw,iv,ic,k,instanceType,folderOut,instanceNumber,pOpt,cOpt,itemsOpt)
     instanceNumber=instanceNumber+1
 
 
@@ -219,7 +115,7 @@ shufly=isf.generateSampleOrderWithin(sampleProblems)
 
 #Chooses the exact instance Order for all trials and blocks 
 #based on shuffled instances
-instanceOrder=isf.generateInstanceOrder(shufly,tN, bN)
+instanceOrder=isf.generateInstanceOrder(shufly,tN, bN,nTypes)
 
 #Exports 'param2.txt' with the required input for the task
 nInstances=len(isf.flatten(sampleProblems))
@@ -228,13 +124,63 @@ isf.exportTaskInfo(tN,bN,instanceOrder,nInstances,folderOut)
 
 
 
-#import matplotlib as mpl
-#import matplotlib.pyplot as plt
-#
-#np.histogram2d(data.nthreshold,data.ncapacity)
-#plt.scatter(data.nthreshold,data.ncapacity)
 
 
+
+
+
+
+
+
+
+##################### Mistakes in Decision Files?
+
+#check the match worked
+temp=data[['nprofit','nprofitNoBinDec']]
+temp['rest']=temp.nprofit-temp.nprofitNoBinDec
+temp.describe()
+
+
+#Check InstanceTypes Here that are 1  and 5 (they are NO solution according to DEC but the proftitQ<Optimum )
+
+problemDec=72-0.27-0.86
+Dec:
+nc=0.42654
+np=0.90625
+c=90
+p=116
+w=38,30,17,24,23,46,33
+v=48,4,27,4,41,1,3
+sol=0
+Opt:
+np=0.90625
+nc=0.42654
+c=90
+profitOpt=116
+
+
+data.instanceType[data.instanceType>0].hist()
+
+len(data.problem[data.instanceType==5])
+
+prob=data.problemDec[data.instanceType==1].reset_index()
+prob=prob.problemDec[0]
+
+decProfit=dataDec[['profit','capacity','weights','values','solution','nprofitNoBin']][dataDec.problem==prob]
+decProfit
+optProfit=data[['profitOpt','capacity','weights','values','solution','nprofit']][data.problemDec==prob]
+optProfit
+    
+    
+data.nprofitNoBinOpt[dataDec.weights==data.weights[0] & data.values==data.values[0] & data.ncapacity==data.ncapacity[0]]
+
+dataDec.instanceType.unique()
+
+dataDec.nprofitNoBin.unique()
+dataDec['nprofitNoBin']=dataDec.nprofit
+
+
+dataDec.weights[dataDec.nprofitNoBin.unique()[0]==dataDec.nprofitNoBin]
 
 
 
