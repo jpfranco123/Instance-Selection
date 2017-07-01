@@ -15,8 +15,7 @@ Instance Random Selection
 #Make standard No BIn: i.e. ncapacity and nprofit are not binned . And create for decision problem ncapacityBin(nprof..): and change all dependendencies
 
                                                                                                                
-                                                                                                               
-                                                                                                               
+                                                                                           
 #Before Starting optimization part you must have run intanceSelectionDec and stored the data in dataDec
 dataDec=data
 
@@ -37,22 +36,23 @@ importlib.reload(isf)
 #cwd = os.getcwd()
 
 #jfranco1
+problemID='-rm-1'
 folderInput='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Data/Simulations and Solutions/optimisation/'
-folderOut='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/'
+folderOut='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/optimization/'
 
 #dataSAT=[];
 dataMZN=[];
 dataMetrics=[];
 
 #Files to be uploaded with respect to the number of items
-cols=[7]#,15,20,25,30]
+cols=[6]#,15,20,25,30]
 nCols=len(cols)
  
 #Data Upload
 for i in cols:
-    fileName1=folderInput+str(i)+'/'+'mzn-'+str(i)+'-analysis.csv'
+    fileName1=folderInput+str(i)+'/'+'mzn-'+str(i)+problemID+'.csv'
     #fileName2=folder+str(i)+'/'+'sat-'+str(i)+'-analysis.csv'
-    fileName3=folderInput+str(i)+'/'+'metrics-'+str(i)+'-analysis.csv'
+    fileName3=folderInput+str(i)+'/'+'metrics-'+str(i)+problemID+'.csv'
     
     mzn=pd.read_csv(fileName1,',')
     #sat=pd.read_csv(fileName2,',')
@@ -70,17 +70,18 @@ for i in range(0,nCols):
 dataOpt=dataMZN[0]
 
 # Calculates nprofit for the optimization case (i.e. the optimum normalized profit)
-dataOpt=calculateOptimum(dataOpt)
+dataOpt=isf.calculateOptimum(dataOpt)
 
 
 # Merges Optimization data and relevant decision columns. 
 # Aim: Add instance type from decision Problem to Optimization Problem
 # Warning: Here each optimization problem is mapped into many decion problems
-data=mergeOptDec(dataDec, dataOpt)
+data=isf.mergeOptDec(dataDec, dataOpt)
 
 
 #Keep only those instances where the nProfit of Decision problem (not binned) is the closest to nprofitOpt s.t. nprofitNoBinDec<nprofitOpt
-data=removeRepeatedOptInstances(data)
+#This give us instances that have solution and are in the phase transition
+data=isf.removeRepeatedOptInstances(data)
 
 
 #Sample Instances
@@ -88,13 +89,14 @@ data=removeRepeatedOptInstances(data)
 #requires tN to be multiple of 6
 tN=12
 bN=3
+possibleTypes=[2,4]
+nTypes=len(possibleTypes)
 
 # Samples randomly from each instance-type sampleSizePerBin
 # Output: list of sublists. Each sublist has sampleSizePerBin size with the instances ID
 # Warning: Sampling is done with replacement
-sampleSizePerBin=int(tN*bN/3)
-possibleTypes=range(2,7,2)
-nTypes=len(possibleTypes)
+sampleSizePerBin=int(tN*bN/nTypes)
+
 sampleProblems=isf.sampleInstanceProblems(data,sampleSizePerBin,possibleTypes)
 
 
@@ -120,11 +122,6 @@ instanceOrder=isf.generateInstanceOrder(shufly,tN, bN,nTypes)
 #Exports 'param2.txt' with the required input for the task
 nInstances=len(isf.flatten(sampleProblems))
 isf.exportTaskInfo(tN,bN,instanceOrder,nInstances,folderOut)
-
-
-
-
-
 
 
 
@@ -160,6 +157,8 @@ profitOpt=116
 
 
 data.instanceType[data.instanceType>0].hist()
+data.instanceType[data.instanceType==2].describe()
+data.instanceType[data.instanceType==4].describe()
 
 len(data.problem[data.instanceType==5])
 

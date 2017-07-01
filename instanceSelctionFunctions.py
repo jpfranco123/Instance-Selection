@@ -105,13 +105,13 @@ def addInstanceType(data,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper):
 # Samples randomly from each instance-type sampleSizePerBin
 # Input: possibleTypes:= the instance types from which to sample e.g. range(1,7)
 # Output: list of sublists. Each sublist has sampleSizePerBin size with the instances ID
-# Sampling is done with replacement
+# Sampling is done withOUT replacement
 def sampleInstanceProblems(data,sampleSizePerBin,possibleTypes):
     dataMZN1=data.copy()
     sampleProblems=[]
     for j in possibleTypes:#range(1,7):
         #sampleProblems.extend(dataMZN1.problem[dataMZN1.instanceType==j].sample(n=sampleSizePerBin,replace=True))
-        sampleProblems.append(dataMZN1.problem[dataMZN1.instanceType==j].sample(n=sampleSizePerBin,replace=True))
+        sampleProblems.append(dataMZN1.problem[dataMZN1.instanceType==j].sample(n=sampleSizePerBin,replace=False))
     return sampleProblems
 
 
@@ -272,11 +272,13 @@ def mergeOptDec(dataDec, dataOpt):
     diffDecInfo=dataDec[['weights','values','ncapacityNoBin','nprofitNoBin','instanceType','problem']]
     diffDecInfo.columns=['weights','values','ncapacity','nprofitNoBinDec','instanceType','problemDec']
     dataTemp=pd.merge(diffDecInfo,dataOpt,how='inner',on=['weights','values','ncapacity'])
+    #dataTemp=pd.merge(diffDecInfo,dataOpt,how='inner',on=['weights','values'])
     return dataTemp
     
 
 #Keep only those instances where the nProfit of Decision problem (not binned) is the closest to nprofitOpt 
 #such that nprofitNoBinDec<nprofitOpt
+#Deletes duplicated cases at then end
 def removeRepeatedOptInstances(data):
     dataTemp=data.copy()                                                            
     dataTemp['diffProf']=dataTemp.nprofit-dataTemp.nprofitNoBinDec
@@ -284,6 +286,7 @@ def removeRepeatedOptInstances(data):
     dataTempG=dataTemp.groupby(by=['weights','values','ncapacity'])
     ranking=dataTempG.diffProf.rank(method='min')
     dataTemp=dataTemp[ranking==1]
+    dataTemp=dataTemp[~dataTemp.problem.duplicated()]
     return dataTemp
 
     

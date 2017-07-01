@@ -13,6 +13,10 @@ t = np.linspace(0,1,2000)
 x=data.nProfitOpt
 y=data.ncapacity
 
+x1=meanPlot.nprofitBin
+y1=meanPlot.ncapacityBin
+z1=meanPlot.solution
+
 trace1 = go.Scatter(
     x=x, y=y, mode='markers', name='points',
     marker=dict(color='rgb(102,0,0)', size=2, opacity=0.4)
@@ -30,7 +34,13 @@ trace4 = go.Histogram(
     y=y, name='y density', marker=dict(color='rgb(102,0,0)'),
     xaxis='x2'
 )
-dataPlot = [trace1, trace2, trace3, trace4]
+trace5 = go.Heatmap(
+    x=x1, y=y1,z=z1, name='phaseT',
+    colorscale='Greens', reversescale=False, showscale=False
+)
+#dataPlot = [trace1, trace2, trace3, trace4]
+#dataPlot = [trace5, trace2, trace3, trace4]
+#dataPlot=[trace5]
 
 layout = go.Layout(
     showlegend=False,
@@ -67,4 +77,18 @@ layout = go.Layout(
 )
 
 fig = go.Figure(data=dataPlot, layout=layout)
-plot_url = ply.offline.plot(fig, filename='output/histogramOptInstancesBin0')
+plot_url = ply.offline.plot(fig, filename='output/histogramOptInstancesBin01')
+
+
+
+trace5 = go.Heatmap(
+    x=x1, y=y1,z=z1, name='phaseT',
+    colorscale='Greens', reversescale=False, showscale=False
+)
+dataPlot=[trace5]
+fig = go.Figure(data=dataPlot, layout=layout)
+plot_url = ply.offline.plot(fig, filename='output/histogramOptInstancesBin01')
+
+
+
+
