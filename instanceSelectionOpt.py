@@ -19,7 +19,6 @@ Instance Random Selection
 #Before Starting optimization part you must have run intanceSelectionDec and stored the data in dataDec
 dataDec=data
 
-
 import pandas as pd
 import numpy as np
 import csv
@@ -35,17 +34,28 @@ importlib.reload(isf)
 #import os
 #cwd = os.getcwd()
 
-#jfranco1
+#INPUTS
 problemID='-rm-1'
 folderInput='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Data/Simulations and Solutions/optimisation/'
 folderOut='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/optimization/'
+
+#Files to be uploaded with respect to the number of items
+cols=[6]#,15,20,25,30]
+
+#bN blocks of tN trials 
+#requires tN to be multiple of the number of instances types there are
+tN=2
+bN=1
+#An array with possible types
+possibleTypes=[2,4]
+
+
+
 
 #dataSAT=[];
 dataMZN=[];
 dataMetrics=[];
 
-#Files to be uploaded with respect to the number of items
-cols=[6]#,15,20,25,30]
 nCols=len(cols)
  
 #Data Upload
@@ -85,11 +95,7 @@ data=isf.removeRepeatedOptInstances(data)
 
 
 #Sample Instances
-#bN blocks of tN trials 
-#requires tN to be multiple of 6
-tN=12
-bN=3
-possibleTypes=[2,4]
+
 nTypes=len(possibleTypes)
 
 # Samples randomly from each instance-type sampleSizePerBin
