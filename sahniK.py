@@ -14,14 +14,7 @@ import numpy as np
 
 import libstats as ls
 
-#def xrange(*arg):
-#    if len(arg) ==1 :
-#          return range(arg[0])
-#    elif len(arg) ==2:
-#          return range(arg[0],arg[1])
-#    elif len(arg) ==3:
-#          return range(arg[0],arg[1],arg[2])
-#      
+     
 xrange=range
 #xrange(10,20)
 
@@ -46,8 +39,6 @@ np.mean(data.sahniK[data.instanceType==4])
 
 ##
 #######
-
-
 
 def sahniK(row):
     v=row.valuesArr#[0]

@@ -14,27 +14,19 @@ Instance Random Selection
 #Entonces ncapacity cuando se hace el merge de las dataframes es NoBin, pero se llama ncapacity...
 #Make standard No BIn: i.e. ncapacity and nprofit are not binned . And create for decision problem ncapacityBin(nprof..): and change all dependendencies
 
-                                                                                                               
-                                                                                           
-#Before Starting optimization part you must have run intanceSelectionDec and stored the data in dataDec
-dataDec=data
-
-import pandas as pd
-import numpy as np
-import csv
-import random as rd
+#import pandas as pd
+#import numpy as np
+#import csv
+#import random as rd
 import importlib
 import os
-
-
 os.chdir('/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/')
-
 import instanceSelctionFunctions as isf
-importlib.reload(isf)
-#import os
-#cwd = os.getcwd()
+importlib.reload(isf)                                                                                                       
+                                                                                           
+#IMPORTANT! Before Starting optimization part you must have run intanceSelectionDec and stored the data in dataDec
 
-#INPUTS
+### INPUT ###
 problemID='-rm-1'
 folderInput='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Data/Simulations and Solutions/optimisation/'
 folderOut='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/optimization/'
@@ -48,7 +40,11 @@ tN=9
 bN=2
 #An array with possible types
 possibleTypes=[2,4,6]
-    
+
+#Number of order randomizations (i.e. number of param2.txt files)
+nOrderRandomizations=10
+
+### ---- ###   
     
 ### Data Upload
 dataMZN=isf.importSolvedInstances(nItems,'mzn',folderInput,problemID)
@@ -56,58 +52,48 @@ dataSAT=isf.importSolvedInstances(nItems,'sat',folderInput,problemID)
 
 
 ### Instance Type Attachment
-
 dataOpt=dataMZN[0]
 
 # Calculates nprofit for the optimization case (i.e. the optimum normalized profit)
 dataOpt=isf.calculateOptimum(dataOpt)
 
-
 # Merges Optimization data and relevant decision columns. 
 # Aim: Add instance type from decision Problem to Optimization Problem
 # Warning: Here each optimization problem is mapped into many decion problems
-data=isf.mergeOptDec(dataDec, dataOpt)
+dataOptDec=isf.mergeOptDec(dataDec, dataOpt)
 
 
 #Keep only those instances where the nProfit of Decision problem (not binned) is the closest to nprofitOpt s.t. nprofitNoBinDec<nprofitOpt
 #This give us instances that have solution and are in the phase transition
-data=isf.removeRepeatedOptInstances(data)
-
+dataOptDec=isf.removeRepeatedOptInstances(dataOptDec)
 
 
 ### Sample Instances
 
 nTypes=len(possibleTypes)
+sampleSizePerBin=int(tN*bN/nTypes)
 
 # Samples randomly from each instance-type sampleSizePerBin
 # Output: list of sublists. Each sublist has sampleSizePerBin size with the instances ID
 # Warning: Sampling is done with replacement
-sampleSizePerBin=int(tN*bN/nTypes)
-
-sampleProblems=isf.sampleInstanceProblems(data,sampleSizePerBin,possibleTypes)
-
+sampleProblems=isf.sampleInstanceProblems(dataOptDec,sampleSizePerBin,possibleTypes)
 
 #Exports all the instance files in the sampleProblems list
 instanceNumber=1
 for k in isf.flatten(sampleProblems):
-    iw,iv,ic,instanceType,pOpt,cOpt,itemsOpt=isf.extractInstanceOpt(data,k)
+    iw,iv,ic,instanceType,pOpt,cOpt,itemsOpt=isf.extractInstanceOpt(dataOptDec,k)
     isf.exportInstanceOpt(iw,iv,ic,k,instanceType,folderOut,instanceNumber,pOpt,cOpt,itemsOpt)
     instanceNumber=instanceNumber+1
 
+## INSTANCE ORDER GENERATION and param2.txt export
 
-# Generates the instance randomization order for bN blocks of tN trials 
-# This is done for each of the previously exported files
-
-# Generates the randomization within each difficulty; i.e the sampling order for each difficulty level.
-shufly=isf.generateSampleOrderWithin(sampleProblems)
-
-
-#Chooses the exact instance Order for all trials and blocks 
-#based on shuffled instances
-instanceOrder=isf.generateInstanceOrder(shufly,tN, bN,nTypes)
-
-#Exports 'param2.txt' with the required input for the task
-nInstances=len(isf.flatten(sampleProblems))
-isf.exportTaskInfo(tN,bN,instanceOrder,nInstances,folderOut)
+# Generates the instance randomization order for bN blocks of tN trials for nTypes instance types
+nInstances=tN*bN
+for i in range(0,nOrderRandomizations):
+    instanceOrder=isf.generateInstanceOrder(tN, bN,nTypes)
+    
+    #Exports 'param2.txt' with the required input for the task
+    isf.exportTaskInfo(tN,bN,instanceOrder,nInstances,folderOut,i)
+    
 
 

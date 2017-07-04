@@ -216,17 +216,21 @@ def exportInstanceOpt(iw,iv,ic,problemID,instanceType,folderOutput,instanceNumbe
 ##Generates the instance randomization order for bN blocks of tN trials each.
 
 # Generates the randomization within each difficulty; i.e the sampling order for each difficulty level.
-# Input: List of sublists. Each sublist has sampleSizePerBin size with the instances ID
+# INPUT: 
+# nTypes:= number of instance types
+# number of Instances to calculate the order from (usually = tN*bN)
 # Output: List of sublist. Each sublist has the randomized indeces of the instances for a difficulty level.
 # Assumes that the instance order was saved according to flatten(sampleProblems)
-##66: OMIT SampleProblems from input and as a part of generateInstanceOrder
-def generateSampleOrderWithin(sampleProblems):
+def generateSampleOrderWithin(nTypes,nInstances):
+#    nTypes=len(sampleProblems)
+#    nInstancesPerType=len(sampleProblems[j])
+    nInstancesPerType=int(nInstances/nTypes )
     shufly=[]
     initialIndex=0
-    for j in range(0,len(sampleProblems)):#range(0,6):
-        temp=range(initialIndex,initialIndex+len(sampleProblems[j]))
+    for j in range(0,nTypes):#range(0,6):
+        temp=range(initialIndex,initialIndex+nInstancesPerType)
         temp=[x for x in temp]
-        initialIndex=initialIndex+len(sampleProblems[j])
+        initialIndex=initialIndex+nInstancesPerType
         rd.shuffle(temp)
         shufly.append(temp)
     return shufly
@@ -245,9 +249,12 @@ def generateBlockDifficultyRand(tN,nTypes):
 
 #Chooses the exact instance Order for all trials and blocks based on the difficultyOrder per block and shuffled instances
 #instanceOrder starts in 1.
-#INPUT: Shufly as returned by generateSampleOrderWithin
+#INPUT:
 #nTypes:= number of instance types
-def generateInstanceOrder(shufly,tN, bN,nTypes):
+#tN, bN: number of trials an block respectively
+def generateInstanceOrder(tN, bN,nTypes):
+    nInstances=tN*bN
+    shufly=generateSampleOrderWithin(nTypes,nInstances)
     shuflyTemp=copy.deepcopy(shufly)
     instanceOrder=[]
     for bi in range(0,bN):
@@ -263,14 +270,14 @@ def generateInstanceOrder(shufly,tN, bN,nTypes):
 #The number of instance's files.
 #The instance order
 #INPUT: instanceOrder as returned by generateInstanceOrder, nInstances=number of instances saved to .txt files
-def exportTaskInfo(tN,bN,instanceOrder,nInstances,folderOutput):
+def exportTaskInfo(tN,bN,instanceOrder,nInstances,folderOutput,randomizationNumber):
     tNS='numberOfTrials:'+str(tN)
     bNS='numberOfBlocks:'+str(bN)
     nInstancesS='numberOfInstances:'+str(nInstances)
     instanceOrderS='instanceRandomization:'+str(instanceOrder)
     string="\n".join([tNS, bNS, nInstancesS, instanceOrderS])
     string=string.replace(" ","")
-    text_file = open(folderOutput+'param2.txt', "w")
+    text_file = open(folderOutput+str(randomizationNumber)+'_'+'param2.txt', "w")
     text_file.write(string)
     text_file.close()
 
