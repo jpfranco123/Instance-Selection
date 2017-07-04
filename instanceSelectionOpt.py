@@ -40,42 +40,22 @@ folderInput='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/D
 folderOut='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/optimization/'
 
 #Files to be uploaded with respect to the number of items
-cols=[6]#,15,20,25,30]
+nItems=[6]#,15,20,25,30]
 
 #bN blocks of tN trials 
 #requires tN to be multiple of the number of instances types there are
-tN=2
-bN=1
+tN=9
+bN=2
 #An array with possible types
-possibleTypes=[2,4]
-
-
-
-
-#dataSAT=[];
-dataMZN=[];
-dataMetrics=[];
-
-nCols=len(cols)
- 
-#Data Upload
-for i in cols:
-    fileName1=folderInput+str(i)+'/'+'mzn-'+str(i)+problemID+'.csv'
-    #fileName2=folder+str(i)+'/'+'sat-'+str(i)+'-analysis.csv'
-    fileName3=folderInput+str(i)+'/'+'metrics-'+str(i)+problemID+'.csv'
+possibleTypes=[2,4,6]
     
-    mzn=pd.read_csv(fileName1,',')
-    #sat=pd.read_csv(fileName2,',')
-    metrics=pd.read_csv(fileName3,',')
     
-    dataMZN.append(mzn)
-    #dataSAT.append(sat)
-    dataMetrics.append(metrics)
-    
-#Merges Data from MZN with metrics i  order to add Nprofit and Ncapacity to dataMZN
-for i in range(0,nCols):
-    dataMZN[i]=pd.merge(dataMZN[i],dataMetrics[i],on='problem')
+### Data Upload
+dataMZN=isf.importSolvedInstances(nItems,'mzn',folderInput,problemID)
+dataSAT=isf.importSolvedInstances(nItems,'sat',folderInput,problemID)
 
+
+### Instance Type Attachment
 
 dataOpt=dataMZN[0]
 
@@ -94,7 +74,8 @@ data=isf.mergeOptDec(dataDec, dataOpt)
 data=isf.removeRepeatedOptInstances(data)
 
 
-#Sample Instances
+
+### Sample Instances
 
 nTypes=len(possibleTypes)
 
@@ -128,64 +109,5 @@ instanceOrder=isf.generateInstanceOrder(shufly,tN, bN,nTypes)
 #Exports 'param2.txt' with the required input for the task
 nInstances=len(isf.flatten(sampleProblems))
 isf.exportTaskInfo(tN,bN,instanceOrder,nInstances,folderOut)
-
-
-
-
-
-
-
-
-##################### Mistakes in Decision Files?
-
-#check the match worked
-temp=data[['nprofit','nprofitNoBinDec']]
-temp['rest']=temp.nprofit-temp.nprofitNoBinDec
-temp.describe()
-
-
-#Check InstanceTypes Here that are 1  and 5 (they are NO solution according to DEC but the proftitQ<Optimum )
-
-problemDec=72-0.27-0.86
-Dec:
-nc=0.42654
-np=0.90625
-c=90
-p=116
-w=38,30,17,24,23,46,33
-v=48,4,27,4,41,1,3
-sol=0
-Opt:
-np=0.90625
-nc=0.42654
-c=90
-profitOpt=116
-
-
-data.instanceType[data.instanceType>0].hist()
-data.instanceType[data.instanceType==2].describe()
-data.instanceType[data.instanceType==4].describe()
-
-len(data.problem[data.instanceType==5])
-
-prob=data.problemDec[data.instanceType==1].reset_index()
-prob=prob.problemDec[0]
-
-decProfit=dataDec[['profit','capacity','weights','values','solution','nprofitNoBin']][dataDec.problem==prob]
-decProfit
-optProfit=data[['profitOpt','capacity','weights','values','solution','nprofit']][data.problemDec==prob]
-optProfit
-    
-    
-data.nprofitNoBinOpt[dataDec.weights==data.weights[0] & data.values==data.values[0] & data.ncapacity==data.ncapacity[0]]
-
-dataDec.instanceType.unique()
-
-dataDec.nprofitNoBin.unique()
-dataDec['nprofitNoBin']=dataDec.nprofit
-
-
-dataDec.weights[dataDec.nprofitNoBin.unique()[0]==dataDec.nprofitNoBin]
-
 
 

@@ -1,0 +1,7 @@
+weights:[4,19,35,34,43,10]
+values:[44,33,6,2,36,44]
+capacity:89
+profit:128
+problemID:174-0.62-0.78
+instanceType:4
+solution:1

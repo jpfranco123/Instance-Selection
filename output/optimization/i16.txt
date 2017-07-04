@@ -1,0 +1,8 @@
+weights:[2,6,20,40,40,41]
+values:[5,2,36,23,44,28]
+capacity:90
+problemID:76-0.61
+instanceType:6
+profitAtOptimum:87
+capacityAtOptimum:68
+solutionItems:[1,1,1,0,1,0]
