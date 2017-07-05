@@ -43,8 +43,8 @@ nProfNO=0.9
 nProfYES=0.6
 
 #How to categorize easy/hard IN-Phase-Transition
-quantileLow=0.4
-quantileUpper=0.6
+quantileLow=0.2
+quantileUpper=0.8
 
 #bN blocks of tN trials
 #requires tN to be multiple of nTypes
@@ -94,6 +94,20 @@ dataSM[dataSM.instanceType!=-1].instanceType.hist()
 dataDec=dataSM
 
 
+
+
+
+
+
+#len(dataSM[dataSM.instanceType==3].instanceType)
+#
+#dataSM[dataSM.instanceType==4].problem
+#dataSM['itemsID']= [ x.split('-')[0] for x in dataSM.problem ]
+#
+#len(dataSM['itemsID'][dataSM.instanceType==6].unique())
+#len(dataSM['itemsID'][dataSM.instanceType==2])
+
+
 ######################
 ## Taking only MZN solver output for instance Type categorization
 #data=dataMZN[0]
@@ -111,7 +125,7 @@ dataDec=dataSM
 # Sampling is done withOUT replacement
 sampleSizePerBin=int(tN*bN/nTypes)
 possibleTypes=range(1,nTypes+1)
-sampleProblems=isf.sampleInstanceProblems(dataDec,sampleSizePerBin,possibleTypes)
+sampleProblems=isf.sampleInstanceProblems2(dataDec,sampleSizePerBin,possibleTypes)
 
 #Exports all the instance files in the sampleProblems list
 instanceNumber=1
@@ -175,6 +189,33 @@ dataSMsub.instanceTypeMZN[dataSMsub.instanceTypeSAT==dataSMsub.instanceTypeMZN].
 
 #This is an interesting plot 1-MZN->1-SAT and 4-MZN->4-SAT
 dataSM.plot.scatter(x='instanceTypeMZN',y='instanceTypeSAT')
+len(dataSM.instanceTypeMZN[dataSM.instanceTypeMZN==1])
+len(dataSM.instanceTypeMZN[dataSM.instanceTypeMZN==3])
+len(dataSM.instanceTypeSAT[dataSM.instanceTypeSAT==1])
+len(dataSM.instanceTypeSAT[dataSM.instanceTypeSAT==3])
+
+
+dataSM.instanceTypeMZN[dataSM.instanceTypeMZN==1]
+
+dataM.propagations[(np.abs(dataM.ncapacity-nCap)<0.01) & (np.abs(dataM.nprofit-nProf)<0.01) &
+                         (dataM.solution==0)].plot.hist()
+
+
+mprop=dataM.propagations[(np.abs(dataM.ncapacity-nCap)<0.01) & (np.abs(dataM.nprofit-nProf)<0.01) &
+                         (dataM.solution==0)]
+mprop.describe()
+
+
+dataS.decisions[(np.abs(dataS.ncapacity-nCap)<0.01) & (np.abs(dataS.nprofit-nProf)<0.01) &
+                         (dataS.solution==0)].plot.hist()
+
+sdec=dataS.decisions[(np.abs(dataS.ncapacity-nCap)<0.01) & (np.abs(dataS.nprofit-nProf)<0.01) &
+                         (dataS.solution==0)]
+sdec.describe()
+
+#66 check qUp=complexity.quantile(quantileUpper) works as expected
+qUp=complexity.quantile(quantileUpper)
+
 
 ####################
     

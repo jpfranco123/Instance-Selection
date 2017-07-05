@@ -48,7 +48,7 @@ nOrderRandomizations=10
     
 ### Data Upload
 dataMZN=isf.importSolvedInstances(nItems,'mzn',folderInput,problemID)
-dataSAT=isf.importSolvedInstances(nItems,'sat',folderInput,problemID)
+#dataSAT=isf.importSolvedInstances(nItems,'sat',folderInput,problemID)
 
 
 ### Instance Type Attachment
@@ -76,7 +76,7 @@ sampleSizePerBin=int(tN*bN/nTypes)
 # Samples randomly from each instance-type sampleSizePerBin
 # Output: list of sublists. Each sublist has sampleSizePerBin size with the instances ID
 # Warning: Sampling is done with replacement
-sampleProblems=isf.sampleInstanceProblems(dataOptDec,sampleSizePerBin,possibleTypes)
+sampleProblems=isf.sampleInstanceProblems2(dataOptDec,sampleSizePerBin,possibleTypes)
 
 #Exports all the instance files in the sampleProblems list
 instanceNumber=1
