@@ -19,7 +19,7 @@ xrange=range
 #xrange(10,20)
 
 
-
+data=dataOptDec
 #Adds sahni-K column to the merged data of decision and optimum. (ideally after deleting decision entries)
 data=data.reset_index(drop=True)
 data['sahniK'] = data.apply(lambda row: sahniK(row), axis=1)
@@ -29,11 +29,16 @@ data['sahniK'] = data.apply(lambda row: sahniK(row), axis=1)
 ## Solvers Complexity measures compared to SahniK
 data.plot.scatter(x='instanceType',y='sahniK')
 data.sahniK[data.instanceType==6].plot.hist()
+data.sahniK[data.instanceType==4].plot.hist()
+data.sahniK[data.instanceType==2].plot.hist()
 
 
 np.mean(data.sahniK[data.instanceType==6])
 np.mean(data.sahniK[data.instanceType==2])
 np.mean(data.sahniK[data.instanceType==4])
+
+folderOut='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/optimization/'
+data.to_csv(folderOut+'instancesOptInfoWithSahniK.csv')
 
 
 

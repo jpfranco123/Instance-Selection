@@ -194,15 +194,16 @@ len(dataSM.instanceTypeMZN[dataSM.instanceTypeMZN==3])
 len(dataSM.instanceTypeSAT[dataSM.instanceTypeSAT==1])
 len(dataSM.instanceTypeSAT[dataSM.instanceTypeSAT==3])
 
+len(dataS.instanceTypeSAT[dataS.instanceTypeSAT==2])
 
-dataSM.instanceTypeMZN[dataSM.instanceTypeMZN==1]
+len(dataM.instanceTypeMZN[dataM.instanceTypeMZN==4])
+
 
 dataM.propagations[(np.abs(dataM.ncapacity-nCap)<0.01) & (np.abs(dataM.nprofit-nProf)<0.01) &
                          (dataM.solution==0)].plot.hist()
 
-
 mprop=dataM.propagations[(np.abs(dataM.ncapacity-nCap)<0.01) & (np.abs(dataM.nprofit-nProf)<0.01) &
-                         (dataM.solution==0)]
+                         (dataM.solution==1)]
 mprop.describe()
 
 
@@ -210,11 +211,15 @@ dataS.decisions[(np.abs(dataS.ncapacity-nCap)<0.01) & (np.abs(dataS.nprofit-nPro
                          (dataS.solution==0)].plot.hist()
 
 sdec=dataS.decisions[(np.abs(dataS.ncapacity-nCap)<0.01) & (np.abs(dataS.nprofit-nProf)<0.01) &
-                         (dataS.solution==0)]
+                         (dataS.solution==1)]
 sdec.describe()
 
 #66 check qUp=complexity.quantile(quantileUpper) works as expected
-qUp=complexity.quantile(quantileUpper)
+qUp=sdec.quantile(0.2)
+len(sdec[sdec<=qUp])
+
+qUp=mprop.quantile(0.8)
+len(mprop[mprop>=qUp])
 
 
 ####################

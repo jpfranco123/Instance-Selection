@@ -100,33 +100,27 @@ def addInstanceType(data,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper,c
     dataMZN1=data.copy()
     dataMZN1['instanceType'] = -1
 
-    complexity=dataMZN1[computComplexityColumn][(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01)]
-    #qUp=complexity.quantile(quantileLow)
-    #qDown=complexity.quantile(quantileUpper)
-    qUp=complexity.quantile(quantileUpper)
-    qDown=complexity.quantile(quantileLow)
+#    complexity=dataMZN1[computComplexityColumn][(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01)]
+#    qUp=complexity.quantile(quantileUpper)
+#    qDown=complexity.quantile(quantileLow)
 
-#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) &
-#                          (dataMZN1.propagations<=qDown) & (dataMZN1.solution==0)]=1
-#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) &
-#                        (dataMZN1.propagations<=qDown) & (dataMZN1.solution==1)]=2
-#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) &
-#                    (dataMZN1.propagations>=qUp)& (dataMZN1.solution==0)] =3
-#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) &
-#                    (dataMZN1.propagations>=qUp)& (dataMZN1.solution==1)] =4
-#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProfNO)<0.01) &
-#                    (dataMZN1.solution==0)] =5
-#    dataMZN1.instanceType[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProfYES)<0.01) &
-#                    (dataMZN1.solution==1)] =6
+    complexityNo=dataMZN1[computComplexityColumn][(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & (dataMZN1.solution==0)]
+    qUpNo=complexityNo.quantile(quantileUpper)
+    qDownNo=complexityNo.quantile(quantileLow)
+    
+    complexityYes=dataMZN1[computComplexityColumn][(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & (dataMZN1.solution==1)]
+    qUpYes=complexityYes.quantile(quantileUpper)
+    qDownYes=complexityYes.quantile(quantileLow)
+
 
     dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) &
-                          (dataMZN1[computComplexityColumn]<=qDown) & (dataMZN1.solution==0),'instanceType']=1
+                          (dataMZN1[computComplexityColumn]<=qDownNo) & (dataMZN1.solution==0),'instanceType']=1
     dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) &
-                        (dataMZN1[computComplexityColumn]<=qDown) & (dataMZN1.solution==1),'instanceType']=2
+                        (dataMZN1[computComplexityColumn]<=qDownYes) & (dataMZN1.solution==1),'instanceType']=2
     dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) &
-                    (dataMZN1[computComplexityColumn]>=qUp)& (dataMZN1.solution==0),'instanceType'] =3
+                    (dataMZN1[computComplexityColumn]>=qUpNo)& (dataMZN1.solution==0),'instanceType'] =3
     dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) &
-                    (dataMZN1[computComplexityColumn]>=qUp)& (dataMZN1.solution==1),'instanceType'] =4
+                    (dataMZN1[computComplexityColumn]>=qUpYes)& (dataMZN1.solution==1),'instanceType'] =4
     dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProfNO)<0.01) &
                     (dataMZN1.solution==0),'instanceType'] =5
     dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProfYES)<0.01) &
