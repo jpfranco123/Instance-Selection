@@ -70,7 +70,7 @@ def importSolvedInstances(nItems,solver,folderInput,problemID):
 #BINS are defined with repect to left edge
 def binCapProf(data,nbins):
     dataMZN1=pd.DataFrame(data).copy()
-    steps=1/nbins
+    steps=float(1/nbins)
     #BINS are defined with repect to left edge
     #dataMZN1.ncapacity = pd.cut(dataMZN1.ncapacity,nbins,labels=False)/nbins
     #dataMZN1.nprofit = pd.cut(dataMZN1.nprofit,nbins,labels=False)/nbins
@@ -173,6 +173,39 @@ def sampleInstanceProblems2(data,sampleSizePerBin,possibleTypes):
         sampleProblems.append(jProb)
     return sampleProblems
 
+# sampleInstanceProblems3 Has an additional feature tp sampleInstanceProblems2:
+# sampleSizePerBin is a vector, thus the number of instance of each type doesn't have to be the same 
+# Samples randomly from each instance-type sampleSizePerBin
+# Input: possibleTypes:= the instance types from which to sample e.g. range(1,7)
+# Output: list of sublists. Each sublist has sampleSizePerBin size with the instances ID
+# Sampling is done withOUT replacement
+def sampleInstanceProblems3(data,sampleSizePerBin,possibleTypes):
+    dataMZN1=data.copy()
+    
+    dataMZN1['itemsID']= [int(x.split('-')[0]) for x in dataMZN1.problem]
+    
+    IDsRemaining=dataMZN1.itemsID.unique() 
+    IDsRemaining=[int(x) for x in IDsRemaining]
+    
+    sampleProblems=[]
+    for j in possibleTypes:
+        IDsJ=dataMZN1.itemsID[dataMZN1.instanceType==j].unique()
+        IDsJ=[int(x) for x in IDsJ]
+        IDsAvailable=np.intersect1d(IDsRemaining,IDsJ)
+        IDsAvailable=pd.DataFrame(IDsAvailable)
+        chosenIDs=IDsAvailable.sample(n=sampleSizePerBin[j-1],replace=False)
+        
+        chosenIDs=[int(x) for x in chosenIDs[0]]
+        
+        jProb=[]
+        for i in chosenIDs:
+            problem=dataMZN1.problem[(dataMZN1.instanceType==j) & (dataMZN1.itemsID==i)].sample(n=1,replace=False)
+            jProb.append(problem.iloc[0])
+            IDsRemaining.remove(i)
+            
+        sampleProblems.append(jProb)
+    return sampleProblems
+
 
 #Extracting Instance informations and exporting into .txt files
 
@@ -233,6 +266,25 @@ def exportInstanceOpt(iw,iv,ic,problemID,instanceType,folderOutput,instanceNumbe
     cOptS='capacityAtOptimum:'+str(cOpt)
     pOptS='profitAtOptimum:'+str(pOpt)
     string="\n".join([wS, vS, cS,problemIDS,instanceTypeS,pOptS,cOptS,itemsOptS])
+    string=string.replace(" ","")
+    text_file = open(folderOutput+'i'+str(instanceNumber)+'.txt', "w")
+    text_file.write(string)
+    text_file.close()
+    
+
+#   Input: Profit, Capacity, weights, values and problemID.
+#   The output Folder and the instance number to be maped to the name of the file.)
+#   Output: Saves the Unity-Task-Compatible ".txt" file for that instance.
+def exportInstanceDecT1(iw,iv,ic,ip,problemID,instanceType, solution, ratioQ ,folderOutput,instanceNumber):
+    wS='weights:'+str(iw)
+    vS='values:'+str(iv)
+    cS='capacity:'+str(ic)
+    pS='profit:'+str(ip)
+    problemIDS='problemID:'+str(problemID)
+    instanceTypeS='instanceType:'+str(instanceType)
+    rQs='ratioQ:'+str(ratioQ)
+    solutionS='solution:'+str(solution)
+    string="\n".join([wS, vS, cS, pS,problemIDS,instanceTypeS,solutionS, rQs])
     string=string.replace(" ","")
     text_file = open(folderOutput+'i'+str(instanceNumber)+'.txt', "w")
     text_file.write(string)
@@ -306,6 +358,41 @@ def exportTaskInfo(tN,bN,instanceOrder,nInstances,folderOutput,randomizationNumb
     text_file = open(folderOutput+str(randomizationNumber)+'_'+'param2.txt', "w")
     text_file.write(string)
     text_file.close()
+    
+    
+    
+# Exports the Inter trial intervals (for fMRI) to the file paramMRI.txt
+# ITIs are sampled (approximately) from an exponential distribution
+def exportITIs(tN,bN,folderOutput):
+# If generated formally from a truncated exponential distribution fro one block:
+#    nITI=7;
+#    lda=0.7
+#    lower=8
+#    upper=12
+#    def generateRandomITIs(nITI,lda,lower,upper):
+#        scale=1/lda
+#        expD = stats.truncexpon(b=(upper-lower)/scale, loc=lower, scale=scale)
+#        ITIs = expD.rvs(nITI)
+#        ITIs=np.round(ITIs,0)
+#    return(ITIs)
+#ITIs=generateRandomITIs(nITI,lda,lower,upper)
+    
+    #Ranomization Approximation for one block:
+    ITIs=[8,8,8,8,8,10,10,12] 
+
+    #Generates a randomized vector of ITIs for all blocks
+    shufITI=[]
+    for i in range(0,bN):
+        rd.shuffle(ITIs)
+        shufITI.extend(ITIs)
+    #Exports to paramMRI.txt
+    ITIsS="interTrialIntervals:"+str(shufITI)
+    string=ITIsS#"\n".join([wS, vS, cS, pS,problemIDS,instanceTypeS,solutionS, rQs])
+    string=string.replace(" ","")
+    text_file = open(folderOutput +'_'+'paramMRI.txt', "w")
+    text_file.write(string)
+    text_file.close()
+
 
 # Transforms Solution, Weights and Values to Arrays
 # Calculates Optimum Profit and Weight

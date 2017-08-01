@@ -40,7 +40,7 @@ np.mean(data.sahniK[data.instanceType==4])
 folderOut='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/optimization/'
 data.to_csv(folderOut+'instancesOptInfoWithSahniK.csv')
 
-
+dataDec.to_csv(folderOut+'decisionInstancesInfo.csv')
 
 ##
 #######
