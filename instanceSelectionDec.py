@@ -125,7 +125,8 @@ dataDec=dataSM
 # Sampling is done withOUT replacement
 #sampleSizePerBin=int(tN*bN/nTypes)
 sizePerBin=int(tN*bN/(nTypes+2))
-sampleSizePerBin=[sizePerBin,sizePerBin,sizePerBin,sizePerBin,2*sizePerBin,2*sizePerBin]
+#Total number (Including all blocks) instances per Type
+sampleSizePerBin=[sizePerBin,sizePerBin,sizePerBin,sizePerBin,2*sizePerBin,2*sizePerBin] 
 possibleTypes=range(1,nTypes+1)
 sampleProblems=isf.sampleInstanceProblems3(dataDec,sampleSizePerBin,possibleTypes)
 
@@ -136,12 +137,12 @@ for k in isf.flatten(sampleProblems):
     isf.exportInstance(iw,iv,ic,ip,k,instanceType,solution,folderOut,instanceNumber)
     instanceNumber=instanceNumber+1
 
-## INSTANCE ORDER GENERATION and param2.txt export
+## INSTANCE ORDER GENERATION and param2.txt + paramMRI.txt export
 
 # Generates the instance randomization order for bN blocks of tN trials for nTypes instance types
 nInstances=tN*bN
 for i in range(0,nOrderRandomizations):
-    instanceOrder=isf.generateInstanceOrder(tN, bN,nTypes)
+    instanceOrder=isf.generateInstanceOrder(tN, bN,sampleSizePerBin)
     
     #Exports 'param2.txt' with the required input for the task
     

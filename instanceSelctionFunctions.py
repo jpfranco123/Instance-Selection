@@ -299,13 +299,13 @@ def exportInstanceDecT1(iw,iv,ic,ip,problemID,instanceType, solution, ratioQ ,fo
 # number of Instances to calculate the order from (usually = tN*bN)
 # Output: List of sublist. Each sublist has the randomized indeces of the instances for a difficulty level.
 # Assumes that the instance order was saved according to flatten(sampleProblems)
-def generateSampleOrderWithin(nTypes,nInstances):
-#    nTypes=len(sampleProblems)
-#    nInstancesPerType=len(sampleProblems[j])
-    nInstancesPerType=int(nInstances/nTypes )
+def generateSampleOrderWithin(nInstances,bN,sampleSizePerBin):
+    nTypes=len(sampleSizePerBin)
+    #nInstancesPerType=int(nInstances/nTypes)
     shufly=[]
     initialIndex=0
     for j in range(0,nTypes):#range(0,6):
+        nInstancesPerType=sampleSizePerBin[j]
         temp=range(initialIndex,initialIndex+nInstancesPerType)
         temp=[x for x in temp]
         initialIndex=initialIndex+nInstancesPerType
@@ -317,10 +317,13 @@ def generateSampleOrderWithin(nTypes,nInstances):
 #Input: tN=Number of trials per block
 # requires tN to be multiple of nTypes
 #Output: Array with difficulty sequence for a block (labeled as 1,...,6)
-def generateBlockDifficultyRand(tN,nTypes):
+def generateBlockDifficultyRand(tN,bN,sampleSizePerBin):
+    nTypes=len(sampleSizePerBin)
     difficultyOrder=[]
-    for k in range(0,int(tN/nTypes)):
-        difficultyOrder.extend(range(1,nTypes+1))
+#    for k in range(0,int(tN/nTypes)):
+#        difficultyOrder.extend(range(1,nTypes+1))
+    for j in range(0,nTypes):
+        difficultyOrder.extend([j+1]*int(sampleSizePerBin[j]/bN))
     rd.shuffle(difficultyOrder)
     return(difficultyOrder)
 
@@ -330,13 +333,13 @@ def generateBlockDifficultyRand(tN,nTypes):
 #INPUT:
 #nTypes:= number of instance types
 #tN, bN: number of trials an block respectively
-def generateInstanceOrder(tN, bN,nTypes):
+def generateInstanceOrder(tN, bN,sampleSizePerBin):
     nInstances=tN*bN
-    shufly=generateSampleOrderWithin(nTypes,nInstances)
+    shufly=generateSampleOrderWithin(nInstances,bN,sampleSizePerBin)
     shuflyTemp=copy.deepcopy(shufly)
     instanceOrder=[]
     for bi in range(0,bN):
-        difficultyOrder=generateBlockDifficultyRand(tN, nTypes);
+        difficultyOrder=generateBlockDifficultyRand(tN,bN,sampleSizePerBin);
         for x in difficultyOrder:
             itemToAdd=shuflyTemp[x-1].pop(0)+1
             instanceOrder.extend([itemToAdd])
@@ -389,7 +392,7 @@ def exportITIs(tN,bN,folderOutput):
     ITIsS="interTrialIntervals:"+str(shufITI)
     string=ITIsS#"\n".join([wS, vS, cS, pS,problemIDS,instanceTypeS,solutionS, rQs])
     string=string.replace(" ","")
-    text_file = open(folderOutput +'_'+'paramMRI.txt', "w")
+    text_file = open(folderOutput +'paramMRI.txt', "w")
     text_file.write(string)
     text_file.close()
 
