@@ -1,7 +1,7 @@
-weights:[3,2,8,20,17,46]
-values:[28,13,42,12,34,28]
-capacity:59
-profit:144
-problemID:119-0.62-0.92
+weights:[39,19,5,5,22,7]
+values:[11,32,33,13,30,30]
+capacity:42
+profit:128
+problemID:120-0.44-0.86
 instanceType:5
 solution:0

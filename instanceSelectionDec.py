@@ -33,14 +33,14 @@ nItems=[6]#,15,20,25,30]
 nbins=20
 
 #Normalized capacity from which to sample instances
-nCap=0.6
+nCap=0.4
 
 #Normalized profit from which to sample IN-Phase-Transition instanes
-nProf=0.75
+nProf=0.6
 
 #Normalized profit from which to sample OUT-OF-Phase-Transition instanes
-nProfNO=0.9
-nProfYES=0.6
+nProfNO=0.85
+nProfYES=0.35
 
 #How to categorize easy/hard IN-Phase-Transition
 quantileLow=0.2
