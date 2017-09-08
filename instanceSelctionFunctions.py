@@ -113,10 +113,23 @@ def addInstanceType(data,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper,c
     qDownYes=complexityYes.quantile(quantileLow)
 
 
+#    dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) &
+#                          (dataMZN1[computComplexityColumn]<=qDownNo) & (dataMZN1.solution==0),'instanceType']=1
+#    dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) &
+#                        (dataMZN1[computComplexityColumn]<=qDownYes) & (dataMZN1.solution==1),'instanceType']=2
+#    dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) &
+#                    (dataMZN1[computComplexityColumn]>=qUpNo)& (dataMZN1.solution==0),'instanceType'] =3
+#    dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) &
+#                    (dataMZN1[computComplexityColumn]>=qUpYes)& (dataMZN1.solution==1),'instanceType'] =4
+#    dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProfNO)<0.01) &
+#                    (dataMZN1.solution==0),'instanceType'] =5
+#    dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProfYES)<0.01) &
+#                    (dataMZN1.solution==1),'instanceType'] =6
+
     dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) &
-                          (dataMZN1[computComplexityColumn]<=qDownNo) & (dataMZN1.solution==0),'instanceType']=1
+                          (dataMZN1[computComplexityColumn]<qDownNo) & (dataMZN1.solution==0),'instanceType']=1
     dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) &
-                        (dataMZN1[computComplexityColumn]<=qDownYes) & (dataMZN1.solution==1),'instanceType']=2
+                        (dataMZN1[computComplexityColumn]<qDownYes) & (dataMZN1.solution==1),'instanceType']=2
     dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) &
                     (dataMZN1[computComplexityColumn]>=qUpNo)& (dataMZN1.solution==0),'instanceType'] =3
     dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) &
@@ -125,6 +138,7 @@ def addInstanceType(data,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper,c
                     (dataMZN1.solution==0),'instanceType'] =5
     dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProfYES)<0.01) &
                     (dataMZN1.solution==1),'instanceType'] =6
+                              
     return dataMZN1
 
 
@@ -188,12 +202,14 @@ def sampleInstanceProblems3(data,sampleSizePerBin,possibleTypes):
     IDsRemaining=[int(x) for x in IDsRemaining]
     
     sampleProblems=[]
+    jj=0
     for j in possibleTypes:
         IDsJ=dataMZN1.itemsID[dataMZN1.instanceType==j].unique()
         IDsJ=[int(x) for x in IDsJ]
         IDsAvailable=np.intersect1d(IDsRemaining,IDsJ)
         IDsAvailable=pd.DataFrame(IDsAvailable)
-        chosenIDs=IDsAvailable.sample(n=sampleSizePerBin[j-1],replace=False)
+        #chosenIDs=IDsAvailable.sample(n=sampleSizePerBin[j-1],replace=False)
+        chosenIDs=IDsAvailable.sample(n=sampleSizePerBin[jj],replace=False)
         
         chosenIDs=[int(x) for x in chosenIDs[0]]
         
@@ -204,6 +220,7 @@ def sampleInstanceProblems3(data,sampleSizePerBin,possibleTypes):
             IDsRemaining.remove(i)
             
         sampleProblems.append(jProb)
+        jj=jj+1
     return sampleProblems
 
 
@@ -331,7 +348,7 @@ def generateBlockDifficultyRand(tN,bN,sampleSizePerBin):
 #Chooses the exact instance Order for all trials and blocks based on the difficultyOrder per block and shuffled instances
 #instanceOrder starts in 1.
 #INPUT:
-#nTypes:= number of instance types
+#66 Update: nTypes:= number of instance types
 #tN, bN: number of trials an block respectively
 def generateInstanceOrder(tN, bN,sampleSizePerBin):
     nInstances=tN*bN
@@ -434,7 +451,7 @@ def mergeOptDec(dataDec, dataOpt):
 
 
 #Keep only those instances where the nProfit of Decision problem (not binned) is the closest to nprofitOpt
-#such that nprofitNoBinDec<nprofitOpt
+#such that nprofitNoBinDec<=nprofitOpt
 #Deletes duplicated cases at then end
 def removeRepeatedOptInstances(data):
     dataTemp=data.copy()
@@ -445,3 +462,18 @@ def removeRepeatedOptInstances(data):
     dataTemp=dataTemp[ranking==1]
     dataTemp=dataTemp[~dataTemp.problem.duplicated()]
     return dataTemp
+
+#Keep only those instances where the nProfit of Decision problem (not binned) is the closest to nprofitOpt
+#Difference is that the condition is now that nprofitNoBinDec>nprofitOpt. This means that the answer should be NO, to the decision problem.
+#Deletes duplicated cases at then end
+def removeRepeatedOptInstances2(data):
+    dataTemp=data.copy()
+    #dataTemp['diffProf']=np.abs(dataTemp.nprofit-dataTemp.nprofitNoBinDec)
+    dataTemp['diffProf']=dataTemp.nprofitNoBinDec-dataTemp.nprofit
+    dataTemp=dataTemp[dataTemp.diffProf>0]
+    dataTempG=dataTemp.groupby(by=['weights','values','ncapacity'])
+    ranking=dataTempG.diffProf.rank(method='min')
+    dataTemp=dataTemp[ranking==1]
+    dataTemp=dataTemp[~dataTemp.problem.duplicated()]
+    return dataTemp
+

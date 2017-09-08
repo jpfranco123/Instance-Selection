@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Mon May  1 11:09:57 2017
@@ -80,20 +80,22 @@ dataM=dataMZN[0]
 dataM=isf.binCapProf(dataM,nbins)
 dataM=isf.addInstanceType(dataM,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper,'propagations')
 
-dataS=dataSAT[0]
-dataS=isf.binCapProf(dataS,nbins)
-dataS=isf.addInstanceType(dataS,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper,'decisions')
+## Taking only the intersection of instances categorized equally with MZN and SAT
+#dataS=dataSAT[0]
+#dataS=isf.binCapProf(dataS,nbins)
+#dataS=isf.addInstanceType(dataS,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper,'decisions')
+#
+#dataS['instanceTypeSAT']=dataS.instanceType
+#dataS=dataS[['instanceTypeSAT','problem','decisions']]
+#
+#dataSM=pd.merge(dataS,dataM,on='problem')
+#dataSM=dataSM[dataSM.instanceTypeSAT==dataSM.instanceType]
+#
+#dataSM[dataSM.instanceType!=-1].instanceType.hist()
+#dataDec=dataSM
+##
 
-dataS['instanceTypeSAT']=dataS.instanceType
-dataS=dataS[['instanceTypeSAT','problem','decisions']]
-
-dataSM=pd.merge(dataS,dataM,on='problem')
-dataSM=dataSM[dataSM.instanceTypeSAT==dataSM.instanceType]
-
-dataSM[dataSM.instanceType!=-1].instanceType.hist()
-dataDec=dataSM
-
-
+dataDec=dataM
 
 
 
