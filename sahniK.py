@@ -7,28 +7,53 @@ Created on Wed Jun 21 19:12:14 2017
 """
 
 #HAVE TO CHANHGE THE DIRECTORY
-import libstats
+import importlib
+import os
+os.chdir('/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/carstenKSAnalysis/ks-analysis/')
+import numpy as np
 
-def xrange(*arg):
-    if len(arg) ==1 :
-          return range(arg[0])
-    elif len(arg) ==2:
-          return range(arg[0],arg[1])
-    elif len(arg) ==3:
-          return range(arg[0],arg[1],arg[2])
-      
+import libstats as ls
+
+     
 xrange=range
+#xrange(10,20)
 
 
-xrange(10,20)
+data=dataOptDec
+#Adds sahni-K column to the merged data of decision and optimum. (ideally after deleting decision entries)
+data=data.reset_index(drop=True)
+data['sahniK'] = data.apply(lambda row: sahniK(row), axis=1)
 
-data = data.reset_index(drop=True)
-v=data.valuesArr[0]
-w=data.weightsArr[0]
-c=data.capacity[0]
-solution_items=data.solution[0]
 
-instance = Instance(v, w, c, solution_items)
+#######
+## Solvers Complexity measures compared to SahniK
+data.plot.scatter(x='instanceType',y='sahniK')
+data.sahniK[data.instanceType==6].plot.hist()
+data.sahniK[data.instanceType==4].plot.hist()
+data.sahniK[data.instanceType==2].plot.hist()
 
-instance.solution()
-get_sahni_k(instance)
+
+np.mean(data.sahniK[data.instanceType==6])
+np.mean(data.sahniK[data.instanceType==2])
+np.mean(data.sahniK[data.instanceType==4])
+
+folderOut='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/optimization/'
+data.to_csv(folderOut+'instancesOptInfoWithSahniK.csv')
+
+dataDec.to_csv(folderOut+'decisionInstancesInfo.csv')
+
+##
+#######
+
+def sahniK(row):
+    v=row.valuesArr#[0]
+    w=row.weightsArr#[0]
+    c=row.capacity#[0]
+    solution_items=row.solution#[0]
+    instance = ls.Instance(v, w, c, solution_items)
+    instance.solution()
+    sk=ls.get_sahni_k(instance)
+    return sk
+
+
+
