@@ -85,7 +85,7 @@ dataMZN=isf.importSolvedInstances(nItems,'mzn',folderInputDec,problemIDDec)
 ##  3=nProf-hard-Solution 5=nProfNo-NOSolution 6=nProfYES-Solution
 
 ####################
-## Taking only the intersection of instances categorized equally with MZN and SAT
+## Taking instance categorized according to MZN
 
 dataM=dataMZN[0]
 dataM=isf.binCapProf(dataM,nbins)
