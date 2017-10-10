@@ -1,0 +1,4 @@
+numberOfTrials:24
+numberOfBlocks:1
+numberOfInstances:24
+instanceRandomization:[20,4,23,5,19,7,12,21,22,14,24,8,2,18,9,15,11,3,13,16,17,10,6,1]

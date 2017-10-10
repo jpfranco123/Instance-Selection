@@ -350,6 +350,7 @@ def generateBlockDifficultyRand(tN,bN,sampleSizePerBin):
 #INPUT:
 #66 Update: nTypes:= number of instance types
 #tN, bN: number of trials an block respectively
+#66:Assumes that the instance number is generated in order of increasing type; e.g. instance 1-5 are
 def generateInstanceOrder(tN, bN,sampleSizePerBin):
     nInstances=tN*bN
     shufly=generateSampleOrderWithin(nInstances,bN,sampleSizePerBin)
