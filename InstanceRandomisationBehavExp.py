@@ -13,21 +13,21 @@ import pandas as pd
 import importlib
 import os
 
-#os.chdir('/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/')
-os.chdir('/Users/juanpf/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/')
+os.chdir('/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/')
+#os.chdir('/Users/juanpf/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/')
 
 import instanceSelctionFunctions as isf
 importlib.reload(isf)
 
-nOrderRandomizationsMin=30#0#1
-nOrderRandomizations=60
+nOrderRandomizationsMin=1#0#1
+nOrderRandomizations=30
 
 #Decision
 
-#folderOutDec='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/decision/'
-folderOutDec='/Users/juanpf/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/decision/'
-tNDec=24
-bNDec=3
+folderOutDec='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/decision/'
+#folderOutDec='/Users/juanpf/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/decision/'
+tNDec=8
+bNDec=7
 
 
 nTypesDec=6
@@ -44,8 +44,8 @@ for i in range(nOrderRandomizationsMin,nOrderRandomizations):
     isf.exportTaskInfo(tNDec,bNDec,instanceOrder,nInstances,folderOutDec,i) #Exports 'param2.txt' with the required input for the task
 
 #Optimisation
-#folderOutOpt='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/optimization/'
-folderOutOpt='/Users/juanpf/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/optimization/'
+folderOutOpt='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/optimization/'
+#folderOutOpt='/Users/juanpf/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/optimization/'
 
 #bN blocks of tN trials 
 #requires tN to be multiple of the number of instances types there are
