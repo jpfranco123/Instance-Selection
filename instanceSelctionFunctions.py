@@ -23,7 +23,7 @@ solToArray = lambda d : [int(y) for y in d.split('[')[1].split(']')[0].split(','
 textToArray = lambda d : [int(y) for y in d.split(',')]
 
 def version():
-    return (1.0)
+    return (1.1)
 
 def frange(start, stop, step):
     i = start
@@ -57,6 +57,43 @@ def importSolvedInstances(nItems,solver,folderInput,problemID):
     #Merges Data from MZN with metrics i  order to add Nprofit and Ncapacity to dataMZN
     for i in range(0,nFiles):
         dataMerged.append(pd.merge(dataSolver[i],dataMetrics[i],on='problem'))
+    return (dataMerged)
+
+#Data Import
+# INPUT
+#Files to be uploaded with respect to the number of items
+#nItems=[6]
+#folderInput
+#solver='mzn'
+##solver='sat'
+#problemID='-dm-1'
+# OUTPUT
+# Merged dataFrame of the solver output and the metrics file
+def importSolvedInstancesBothSolvers(nItems,folderInput,problemID):
+    nFiles=len(nItems)
+    dataSolverS=[];
+    dataSolverM=[];
+    dataMetrics=[];
+    dataMerged=[];
+    for i in nItems:
+        fileNameM=folderInput+str(i)+'/'+'mzn'+'-'+str(i)+problemID+'.csv'
+        fileNameS=folderInput+str(i)+'/'+'sat'+'-'+str(i)+problemID+'.csv'
+        fileName3=folderInput+str(i)+'/'+'metrics-'+str(i)+problemID+'.csv'
+        solverM=pd.read_csv(fileNameM,',')
+        solverS=pd.read_csv(fileNameS,',')
+        metrics=pd.read_csv(fileName3,',')
+        solverM = solverM.add_suffix('_MZN')
+        solverS = solverS.add_suffix('_SAT')
+        solverM.rename(columns={'problem_MZN': 'problem'}, inplace=True)
+        solverS.rename(columns={'problem_SAT': 'problem'}, inplace=True)
+        dataSolverS.append(solverS)
+        dataSolverM.append(solverM)
+        dataMetrics.append(metrics)
+
+    #Merges Data from MZN with metrics i  order to add Nprofit and Ncapacity to dataMZN
+    for i in range(0,nFiles):
+        mergeSolvers=pd.merge(dataSolverM[i],dataSolverS[i],on='problem')#,suffixes=('_MZN', '_SAT'))
+        dataMerged.append(pd.merge(mergeSolvers,dataMetrics[i],on='problem'))
     return (dataMerged)
 
 
