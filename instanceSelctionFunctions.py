@@ -1,9 +1,12 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Tue May  2 16:34:23 2017
 
-@author: juanpf
+@author: Pablo Franco (jpfranco123@gmail.com)
+
+Functions used for instance selection and randomisation for the KS-IC project.
+
 """
 
 import random as rd
@@ -144,7 +147,7 @@ def addInstanceType(data,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper,c
     complexityNo=dataMZN1[computComplexityColumn][(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & (dataMZN1.solution==0)]
     qUpNo=complexityNo.quantile(quantileUpper)
     qDownNo=complexityNo.quantile(quantileLow)
-    
+
     complexityYes=dataMZN1[computComplexityColumn][(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProf)<0.01) & (dataMZN1.solution==1)]
     qUpYes=complexityYes.quantile(quantileUpper)
     qDownYes=complexityYes.quantile(quantileLow)
@@ -175,7 +178,7 @@ def addInstanceType(data,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper,c
                     (dataMZN1.solution==0),'instanceType'] =5
     dataMZN1.loc[(np.abs(dataMZN1.ncapacity-nCap)<0.01) & (np.abs(dataMZN1.nprofit-nProfYES)<0.01) &
                     (dataMZN1.solution==1),'instanceType'] =6
-                              
+
     return dataMZN1
 
 
@@ -185,7 +188,7 @@ def addInstanceType(data,nCap,nProf,nProfNO,nProfYES,quantileLow,quantileUpper,c
 # Output: list of sublists. Each sublist has sampleSizePerBin size with the instances ID
 # Sampling is done withOUT replacement
 def sampleInstanceProblems(data,sampleSizePerBin,possibleTypes):
-    dataMZN1=data.copy()                             
+    dataMZN1=data.copy()
     sampleProblems=[]
     for j in possibleTypes:
         sampleProblems.append(dataMZN1.problem[dataMZN1.instanceType==j].sample(n=sampleSizePerBin,replace=False))
@@ -199,12 +202,12 @@ def sampleInstanceProblems(data,sampleSizePerBin,possibleTypes):
 # Sampling is done withOUT replacement
 def sampleInstanceProblems2(data,sampleSizePerBin,possibleTypes):
     dataMZN1=data.copy()
-    
+
     dataMZN1['itemsID']= [int(x.split('-')[0]) for x in dataMZN1.problem]
-    
-    IDsRemaining=dataMZN1.itemsID.unique() 
+
+    IDsRemaining=dataMZN1.itemsID.unique()
     IDsRemaining=[int(x) for x in IDsRemaining]
-    
+
     sampleProblems=[]
     for j in possibleTypes:
         IDsJ=dataMZN1.itemsID[dataMZN1.instanceType==j].unique()
@@ -212,32 +215,32 @@ def sampleInstanceProblems2(data,sampleSizePerBin,possibleTypes):
         IDsAvailable=np.intersect1d(IDsRemaining,IDsJ)
         IDsAvailable=pd.DataFrame(IDsAvailable)
         chosenIDs=IDsAvailable.sample(n=sampleSizePerBin,replace=False)
-        
+
         chosenIDs=[int(x) for x in chosenIDs[0]]
-        
+
         jProb=[]
         for i in chosenIDs:
             problem=dataMZN1.problem[(dataMZN1.instanceType==j) & (dataMZN1.itemsID==i)].sample(n=1,replace=False)
             jProb.append(problem.iloc[0])
             IDsRemaining.remove(i)
-            
+
         sampleProblems.append(jProb)
     return sampleProblems
 
 # sampleInstanceProblems3 Has an additional feature tp sampleInstanceProblems2:
-# sampleSizePerBin is a vector, thus the number of instance of each type doesn't have to be the same 
+# sampleSizePerBin is a vector, thus the number of instance of each type doesn't have to be the same
 # Samples randomly from each instance-type sampleSizePerBin
 # Input: possibleTypes:= the instance types from which to sample e.g. range(1,7)
 # Output: list of sublists. Each sublist has sampleSizePerBin size with the instances ID
 # Sampling is done withOUT replacement
 def sampleInstanceProblems3(data,sampleSizePerBin,possibleTypes):
     dataMZN1=data.copy()
-    
+
     dataMZN1['itemsID']= [int(x.split('-')[0]) for x in dataMZN1.problem]
-    
-    IDsRemaining=dataMZN1.itemsID.unique() 
+
+    IDsRemaining=dataMZN1.itemsID.unique()
     IDsRemaining=[int(x) for x in IDsRemaining]
-    
+
     sampleProblems=[]
     jj=0
     for j in possibleTypes:
@@ -247,15 +250,15 @@ def sampleInstanceProblems3(data,sampleSizePerBin,possibleTypes):
         IDsAvailable=pd.DataFrame(IDsAvailable)
         #chosenIDs=IDsAvailable.sample(n=sampleSizePerBin[j-1],replace=False)
         chosenIDs=IDsAvailable.sample(n=sampleSizePerBin[jj],replace=False)
-        
+
         chosenIDs=[int(x) for x in chosenIDs[0]]
-        
+
         jProb=[]
         for i in chosenIDs:
             problem=dataMZN1.problem[(dataMZN1.instanceType==j) & (dataMZN1.itemsID==i)].sample(n=1,replace=False)
             jProb.append(problem.iloc[0])
             IDsRemaining.remove(i)
-            
+
         sampleProblems.append(jProb)
         jj=jj+1
     return sampleProblems
@@ -324,7 +327,7 @@ def exportInstanceOpt(iw,iv,ic,problemID,instanceType,folderOutput,instanceNumbe
     text_file = open(folderOutput+'i'+str(instanceNumber)+'.txt', "w")
     text_file.write(string)
     text_file.close()
-    
+
 
 #   Input: Profit, Capacity, weights, values and problemID.
 #   The output Folder and the instance number to be maped to the name of the file.)
@@ -348,7 +351,7 @@ def exportInstanceDecT1(iw,iv,ic,ip,problemID,instanceType, solution, ratioQ ,fo
 ##Generates the instance randomization order for bN blocks of tN trials each.
 
 # Generates the randomization within each difficulty; i.e the sampling order for each difficulty level.
-# INPUT: 
+# INPUT:
 # nTypes:= number of instance types
 # number of Instances to calculate the order from (usually = tN*bN)
 # Output: List of sublist. Each sublist has the randomized indeces of the instances for a difficulty level.
@@ -416,9 +419,9 @@ def exportTaskInfo(tN,bN,instanceOrder,nInstances,folderOutput,randomizationNumb
     text_file = open(folderOutput+str(randomizationNumber)+'_'+'param2.txt', "w")
     text_file.write(string)
     text_file.close()
-    
-    
-    
+
+
+
 # Exports the Inter trial intervals (for fMRI) to the file paramMRI.txt
 # ITIs are sampled (approximately) from an exponential distribution
 def exportITIs(tN,bN,folderOutput):
@@ -434,9 +437,9 @@ def exportITIs(tN,bN,folderOutput):
 #        ITIs=np.round(ITIs,0)
 #    return(ITIs)
 #ITIs=generateRandomITIs(nITI,lda,lower,upper)
-    
+
     #Ranomization Approximation for one block:
-    ITIs=[8,8,8,8,8,10,10,12] 
+    ITIs=[8,8,8,8,8,10,10,12]
 
     #Generates a randomized vector of ITIs for all blocks
     shufITI=[]
@@ -514,4 +517,3 @@ def removeRepeatedOptInstances2(data):
     dataTemp=dataTemp[ranking==1]
     dataTemp=dataTemp[~dataTemp.problem.duplicated()]
     return dataTemp
-

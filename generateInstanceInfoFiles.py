@@ -3,7 +3,18 @@
 """
 Created on Thu Nov  9 12:54:39 2017
 
-@author: jfranco1
+@author: Pablo Franco (jpfranco123@gmail.com)
+
+Generates a .csv file with all the instance information from the solvers
+
+@Dependencies:
+instanceSelctionFunctions.py
+ks-analysis (For sahni-K calculation)
+
+Generated Instance Files:
+    1. Solver specific: e.g. mzn-6-dm-1.csv
+    2. General Instance metrics: e.g. metrics-6-dm-1.csv
+
 """
 
 #import pandas as pd
@@ -12,12 +23,13 @@ import os
 import sys
 import numpy as np
 
-os.chdir('/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/')
+folder = '/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Research/Complexity Project/'
+os.chdir( folder +'KS-IC/Instance Selection/')
+
 import instanceSelctionFunctions as isf
 importlib.reload(isf)
 
-#os.chdir('/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/carstenKSAnalysis/ks-analysis/')
-sys.path.append('/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/carstenKSAnalysis/ks-analysis/')
+sys.path.append(folder+'Code/carstenKSAnalysis/ks-analysis/')
 import libstats as ls
 
 
@@ -41,15 +53,15 @@ def sahniK(row):
 
 #folderOut='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Data/Simulations and Solutions/'
 
-#Decision
+### INPUT Decision Variant ###
 problemIDDec='-dm-1'
-folderInputDec='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Data/Simulations and Solutions/KS decision/'
-folderOutDec='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/decision/'
+folderInputDec= folder + 'Data/Simulations Data/KS decision/'
+folderOutDec= folder + 'KS-IC/Data/Simulations/instanceSelectionOutput/decision/'
 
-#Optimisation
+### INPUT Optimisation Variant ###
 problemIDOpt='-rm-1'
-folderInputOpt='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Data/Simulations and Solutions/KS optimisation/'
-folderOutOpt='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/optimization/'
+folderInputOpt= folder + 'Data/Simulations Data/KS optimisation/'
+folderOutOpt= folder + 'KS-IC/Data/Simulations/instanceSelectionOutput/optimisation/'
 
 
 ### DATA UPLOAD ###
@@ -59,7 +71,7 @@ dataDec=isf.importSolvedInstancesBothSolvers(nItems,folderInputDec,problemIDDec)
 dataDec=dataDec[0]
 
 
-#Adds other relevant measures
+# Adds other relevant measures
 dataDec['lnPC'] = np.log(dataDec.nprofit/dataDec.ncapacity)
 
 dataDec['lnPC_IC'] = np.abs(dataDec['lnPC'] - 0.4)

@@ -3,62 +3,22 @@
 """
 Created on Sun Sep  3 14:34:03 2017
 
-@author: Pablo Franco (jpfranco123@gmail.com)
+@author: Pablo Franco
 
-Instance Random Selection and order Randomisation (KS-IC project)
-
-@Dependencies:
-instanceSelctionFunctions.py
-
-@Input:
-Generated Instance Files:
-    1. Solver specific: e.g. mzn-6-dm-1.csv
-    2. General Instance metrics: e.g. metrics-6-dm-1.csv
-
-@Output:
-1. Instance .txt files structured for Knapsack Unity game named in order i1.txt, i2.txt,...
-A. Decision: Instances:
-weights:[48,34,43,32,20,44]
-values:[26,24,34,47,17,11]
-capacity:90
-profit:100
-problemID:98-0.41-0.63
-instanceType:1
-solution:0
-
-B. Optimistion Instances:
-weights:[29,8,19,41,40,32]
-values:[47,40,39,44,23,11]
-capacity:69
-problemID:144-0.41
-instanceType:1
-profitAtOptimum:126
-capacityAtOptimum:56
-solutionItems:[1,1,1,0,0,0]
-
-2. param2.txt instance information files with order ransomisation
-numberOfTrials:9
-numberOfBlocks:2
-numberOfInstances:18
-instanceRandomization:[10,15,11,1,14,18,4,5,12,3,7,13,6,17,8,16,2,9]
-
-
+Instance Random Selection for Behavioural Session
 """
 
 import pandas as pd
 import importlib
 import os
 
-#Project folder
-folder = '/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Research/Complexity Project/'
-os.chdir( folder +'KS-IC/Instance Selection/')
+os.chdir('/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/')
 
-#Imports all of the required functions
 import instanceSelctionFunctions as isf
 importlib.reload(isf)
 
 ### General Input ###
-
+ 
 #Files to be uploaded with respect to the number of items
 nItems=[6]#,15,20,25,30]
 
@@ -66,11 +26,10 @@ nItems=[6]#,15,20,25,30]
 nOrderRandomizations=30
 
 
-
-### INPUT Decision Variant ###
+### INPUT Dec ###
 problemIDDec='-dm-1'
-folderInputDec= folder + 'Data/Simulations Data/KS decision/'
-folderOutDec= folder + 'KS-IC/Data/Simulations/instanceSelectionOutput/decision/'
+folderInputDec='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Data/Simulations and Solutions/decision/'
+folderOutDec='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/decision/'
 
 #number of bins to allocate ncapacity and nprofits to bins
 nbins=20
@@ -96,12 +55,12 @@ bNDec=3
 nTypesDec=6
 
 
-### INPUT Optimisation Variant ###
+### INPUT Opt ###
 problemIDOpt='-rm-1'
-folderInputOpt= folder + 'Data/Simulations Data/KS optimisation/'
-folderOutOpt= folder + 'KS-IC/Data/Simulations/instanceSelectionOutput/optimisation/'
+folderInputOpt='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Data/Simulations and Solutions/optimisation/'
+folderOutOpt='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/optimization/'
 
-#bN blocks of tN trials
+#bN blocks of tN trials 
 #requires tN to be multiple of the number of instances types there are
 tNOpt=9
 bNOpt=2
@@ -126,7 +85,7 @@ dataMZN=isf.importSolvedInstances(nItems,'mzn',folderInputDec,problemIDDec)
 ##  3=nProf-hard-Solution 5=nProfNo-NOSolution 6=nProfYES-Solution
 
 ####################
-## Taking instance categorized according to MZN
+## Taking only the intersection of instances categorized equally with MZN and SAT
 
 dataM=dataMZN[0]
 dataM=isf.binCapProf(dataM,nbins)
@@ -140,7 +99,7 @@ dataDec=dataM
 # Sampling is done withOUT replacement
 sizePerBin=int(tNDec*bNDec/(nTypesDec+2))
 #Total number (Including all blocks) instances per Type
-sampleSizePerBin=[sizePerBin,sizePerBin,sizePerBin,sizePerBin,2*sizePerBin,2*sizePerBin]
+sampleSizePerBin=[sizePerBin,sizePerBin,sizePerBin,sizePerBin,2*sizePerBin,2*sizePerBin] 
 possibleTypesDec=range(1,nTypesDec+1)
 sampleProblems=isf.sampleInstanceProblems3(dataDec,sampleSizePerBin,possibleTypesDec)
 
@@ -160,10 +119,10 @@ for i in range(0,nOrderRandomizations):
     isf.exportTaskInfo(tNDec,bNDec,instanceOrder,nInstances,folderOutDec,i) #Exports 'param2.txt' with the required input for the task
 
 sampleProblemsDec=sampleProblems
-
+                      
 
 ### Optimisation Task instance selection
-
+    
 ### Data Upload
 dataMZN=isf.importSolvedInstances(nItems,'mzn',folderInputOpt,problemIDOpt)
 
@@ -173,7 +132,7 @@ dataOpt=dataMZN[0]
 # Calculates nprofit for the optimization case (i.e. the optimum normalized profit)
 dataOpt=isf.calculateOptimum(dataOpt)
 
-# Merges Optimization data and relevant decision columns.
+# Merges Optimization data and relevant decision columns. 
 # Aim: Add instance type from decision Problem to Optimization Problem
 # Warning: Here each optimization problem is mapped into many decion problems
 dataOptDec=isf.mergeOptDec(dataDec, dataOpt)
@@ -188,7 +147,7 @@ dataOptDec=isf.removeRepeatedOptInstances2(dataOptDec)
 
 nTypesOpt=len(possibleTypesOpt)
 sizePerBin=int(tNOpt*bNOpt/(nTypesOpt))
-sampleSizePerBin=[sizePerBin,sizePerBin,sizePerBin]
+sampleSizePerBin=[sizePerBin,sizePerBin,sizePerBin] 
 #sampleSizePerBin=int(tNOpt*bNOpt/nTypesOpt)
 
 # Samples randomly from each instance-type sampleSizePerBin
@@ -209,5 +168,6 @@ nInstances=tNOpt*bNOpt
 for i in range(0,nOrderRandomizations):
     instanceOrder=isf.generateInstanceOrder(tNOpt, bNOpt,sampleSizePerBin)
     isf.exportTaskInfo(tNOpt,bNOpt,instanceOrder,nInstances,folderOutOpt,i)#Exports 'param2.txt' with the required input for the task
-
+    
 sampleProblemsOpt=sampleProblems
+    
