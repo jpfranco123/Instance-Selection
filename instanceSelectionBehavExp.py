@@ -5,7 +5,13 @@ Created on Sun Sep  3 14:34:03 2017
 
 @author: Pablo Franco
 
-Instance Random Selection for Behavioural Session
+Instance Random Selection and Randomisation (KS-IC project)
+
+Input:
+
+Output:
+
+
 """
 
 import pandas as pd
@@ -14,11 +20,12 @@ import os
 
 os.chdir('/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/')
 
+#Imports all of the required functions
 import instanceSelctionFunctions as isf
 importlib.reload(isf)
 
 ### General Input ###
- 
+
 #Files to be uploaded with respect to the number of items
 nItems=[6]#,15,20,25,30]
 
@@ -26,7 +33,7 @@ nItems=[6]#,15,20,25,30]
 nOrderRandomizations=30
 
 
-### INPUT Dec ###
+### INPUT Decision Variant ###
 problemIDDec='-dm-1'
 folderInputDec='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Data/Simulations and Solutions/decision/'
 folderOutDec='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/decision/'
@@ -55,12 +62,12 @@ bNDec=3
 nTypesDec=6
 
 
-### INPUT Opt ###
+### INPUT Optimisation Variant ###
 problemIDOpt='-rm-1'
 folderInputOpt='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Data/Simulations and Solutions/optimisation/'
 folderOutOpt='/Users/jfranco1/Google Drive/Melbourne/UNIMELB/Complexity Project/Code/Instance Selection/output/optimization/'
 
-#bN blocks of tN trials 
+#bN blocks of tN trials
 #requires tN to be multiple of the number of instances types there are
 tNOpt=9
 bNOpt=2
@@ -99,7 +106,7 @@ dataDec=dataM
 # Sampling is done withOUT replacement
 sizePerBin=int(tNDec*bNDec/(nTypesDec+2))
 #Total number (Including all blocks) instances per Type
-sampleSizePerBin=[sizePerBin,sizePerBin,sizePerBin,sizePerBin,2*sizePerBin,2*sizePerBin] 
+sampleSizePerBin=[sizePerBin,sizePerBin,sizePerBin,sizePerBin,2*sizePerBin,2*sizePerBin]
 possibleTypesDec=range(1,nTypesDec+1)
 sampleProblems=isf.sampleInstanceProblems3(dataDec,sampleSizePerBin,possibleTypesDec)
 
@@ -119,10 +126,10 @@ for i in range(0,nOrderRandomizations):
     isf.exportTaskInfo(tNDec,bNDec,instanceOrder,nInstances,folderOutDec,i) #Exports 'param2.txt' with the required input for the task
 
 sampleProblemsDec=sampleProblems
-                      
+
 
 ### Optimisation Task instance selection
-    
+
 ### Data Upload
 dataMZN=isf.importSolvedInstances(nItems,'mzn',folderInputOpt,problemIDOpt)
 
@@ -132,7 +139,7 @@ dataOpt=dataMZN[0]
 # Calculates nprofit for the optimization case (i.e. the optimum normalized profit)
 dataOpt=isf.calculateOptimum(dataOpt)
 
-# Merges Optimization data and relevant decision columns. 
+# Merges Optimization data and relevant decision columns.
 # Aim: Add instance type from decision Problem to Optimization Problem
 # Warning: Here each optimization problem is mapped into many decion problems
 dataOptDec=isf.mergeOptDec(dataDec, dataOpt)
@@ -147,7 +154,7 @@ dataOptDec=isf.removeRepeatedOptInstances2(dataOptDec)
 
 nTypesOpt=len(possibleTypesOpt)
 sizePerBin=int(tNOpt*bNOpt/(nTypesOpt))
-sampleSizePerBin=[sizePerBin,sizePerBin,sizePerBin] 
+sampleSizePerBin=[sizePerBin,sizePerBin,sizePerBin]
 #sampleSizePerBin=int(tNOpt*bNOpt/nTypesOpt)
 
 # Samples randomly from each instance-type sampleSizePerBin
@@ -168,6 +175,5 @@ nInstances=tNOpt*bNOpt
 for i in range(0,nOrderRandomizations):
     instanceOrder=isf.generateInstanceOrder(tNOpt, bNOpt,sampleSizePerBin)
     isf.exportTaskInfo(tNOpt,bNOpt,instanceOrder,nInstances,folderOutOpt,i)#Exports 'param2.txt' with the required input for the task
-    
+
 sampleProblemsOpt=sampleProblems
-    
